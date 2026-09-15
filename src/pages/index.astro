@@ -1,0 +1,62 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Cosmos from '../components/Cosmos.astro';
+import Hero from '../components/Hero.astro';
+import Brief from '../components/Brief.astro';
+import Trajectory from '../components/Trajectory.astro';
+import Missions from '../components/Missions.astro';
+import Constellation from '../components/Constellation.astro';
+import Signal from '../components/Signal.astro';
+import { absolute } from '../lib/site';
+
+const profile = (await getEntry('profile', 'profile'))!.data;
+const education = (await getCollection('education')).sort((a, b) => a.data.order - b.data.order);
+const roles = (await getCollection('experience')).sort((a, b) => a.data.order - b.data.order);
+const skills = await getCollection('skills');
+const current = roles.find((role) => role.data.current);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: profile.name,
+  jobTitle: profile.role,
+  description: profile.summary,
+  url: absolute('/', Astro.site),
+  email: `mailto:${profile.email}`,
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: profile.location.split(',')[0]?.trim(),
+    addressRegion: profile.location.split(',')[1]?.trim(),
+    addressCountry: 'US',
+  },
+  sameAs: profile.socials.map((social) => social.href),
+  ...(current
+    ? { worksFor: { '@type': 'Organization', name: current.data.company } }
+    : {}),
+  alumniOf: education.map((item) => ({
+    '@type': 'CollegeOrUniversity',
+    name: item.data.institution,
+  })),
+  knowsAbout: skills
+    .flatMap((group) =>
+      group.data.items.map((item) => (typeof item === 'string' ? item : item.name)),
+    )
+    .slice(0, 30),
+};
+---
+
+<Base
+  title={`${profile.name} — ${profile.role}`}
+  description={profile.summary}
+  path="/"
+  jsonLd={jsonLd}
+>
+  <Cosmos />
+  <Hero />
+  <Brief />
+  <Trajectory />
+  <Missions />
+  <Constellation />
+  <Signal />
+</Base>

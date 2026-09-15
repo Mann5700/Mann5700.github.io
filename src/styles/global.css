@@ -1,0 +1,476 @@
+@import './tokens.css';
+
+/* ============================================================================
+   RESET + BASE
+   ========================================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* Anchors clear the floating navigation. */
+  scroll-padding-top: calc(var(--nav-h) + 2rem);
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  min-height: 100svh;
+  background-color: var(--c-void);
+  color: var(--c-text);
+  font-family: var(--f-sans);
+  font-size: var(--step-0);
+  line-height: var(--lh-normal);
+  letter-spacing: var(--ls-body);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+body[data-menu-open='true'] {
+  overflow: hidden;
+}
+
+img,
+picture,
+svg,
+canvas,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 300;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-heading);
+  text-wrap: balance;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul[role='list'],
+ol[role='list'] {
+  list-style: none;
+  padding: 0;
+}
+
+::selection {
+  background: rgb(255 157 92 / 28%);
+  color: var(--c-text-strong);
+}
+
+/* --------------------------------------------------------------- focus ---- */
+
+:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 3px;
+  border-radius: var(--r-xs);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.skip-link {
+  position: fixed;
+  top: var(--sp-s);
+  left: var(--sp-s);
+  z-index: 200;
+  padding: 0.75rem 1.25rem;
+  background: var(--c-ember);
+  color: var(--c-accent-contrast);
+  border-radius: var(--r-s);
+  font-size: var(--step--1);
+  font-weight: 500;
+  transform: translateY(-160%);
+  transition: transform var(--d-base) var(--e-out);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* ============================================================================
+   LAYOUT PRIMITIVES
+   ========================================================================= */
+
+.shell {
+  width: 100%;
+  max-width: var(--w-page);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.shell--wide {
+  max-width: var(--w-wide);
+}
+
+.shell--text {
+  max-width: var(--w-text);
+}
+
+.section {
+  position: relative;
+  padding-block: var(--sp-section);
+  z-index: var(--z-content);
+}
+
+.section + .section {
+  padding-block-start: 0;
+}
+
+/* A hairline that fades out at both ends — used to separate movements. */
+.rule {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--c-line-strong) 18%, var(--c-line-strong) 82%, transparent);
+}
+
+/* ============================================================================
+   TYPE UTILITIES
+   ========================================================================= */
+
+.label {
+  font-family: var(--f-mono);
+  font-size: var(--step--2);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-faint);
+}
+
+.mono {
+  font-family: var(--f-mono);
+  font-size: var(--step--1);
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.lede {
+  font-size: var(--step-1);
+  line-height: var(--lh-relaxed);
+  color: var(--c-muted);
+  font-weight: 300;
+}
+
+.prose {
+  max-width: var(--w-text);
+  color: var(--c-muted);
+  font-weight: 300;
+}
+
+.prose > * + * {
+  margin-block-start: 1.1em;
+}
+
+.prose strong {
+  color: var(--c-text);
+  font-weight: 500;
+}
+
+.prose em {
+  color: var(--c-text);
+  font-style: normal;
+  background: linear-gradient(180deg, transparent 72%, var(--c-ember-wash) 72%);
+  padding-inline: 0.15em;
+}
+
+.prose a {
+  color: var(--c-text);
+  border-bottom: 1px solid var(--c-line-strong);
+  transition: border-color var(--d-fast) var(--e-out), color var(--d-fast) var(--e-out);
+}
+
+.prose a:hover {
+  color: var(--c-ember);
+  border-bottom-color: var(--c-ember);
+}
+
+.prose ul {
+  padding-inline-start: 1.1em;
+}
+
+.prose li + li {
+  margin-block-start: 0.5em;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================================
+   CONTROLS
+   ========================================================================= */
+
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--c-text);
+  --btn-border: var(--c-line-strong);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  min-height: 3rem;
+  padding: 0.85rem 1.5rem;
+  border: 1px solid var(--btn-border);
+  border-radius: var(--r-pill);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    border-color var(--d-base) var(--e-out),
+    color var(--d-base) var(--e-out),
+    transform var(--d-base) var(--e-out),
+    background-color var(--d-base) var(--e-out);
+}
+
+/* A light sweep that crosses the button on hover. */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 20%, rgb(255 255 255 / 9%) 50%, transparent 80%);
+  transform: translateX(-110%);
+  transition: transform calc(var(--d-slow) * var(--motion)) var(--e-out);
+}
+
+.btn:hover::after {
+  transform: translateX(110%);
+}
+
+.btn:hover {
+  border-color: rgb(255 255 255 / 30%);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn--primary {
+  --btn-bg: var(--c-text-strong);
+  --btn-fg: #0a0c12;
+  --btn-border: transparent;
+  font-weight: 600;
+}
+
+.btn--primary:hover {
+  --btn-bg: var(--c-ember-hot);
+  --btn-fg: var(--c-accent-contrast);
+  box-shadow: var(--sh-glow);
+}
+
+.btn--ghost {
+  --btn-border: var(--c-line);
+  color: var(--c-muted);
+}
+
+.btn--ghost:hover {
+  color: var(--c-text);
+}
+
+.btn__icon {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  transition: transform var(--d-base) var(--e-out);
+}
+
+.btn:hover .btn__icon {
+  transform: translateX(2px);
+}
+
+/* Small inline chip used for technologies. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: rgb(255 255 255 / 2.5%);
+  color: var(--c-muted);
+  font-family: var(--f-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: border-color var(--d-fast) var(--e-out), color var(--d-fast) var(--e-out);
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* ============================================================================
+   SCROLL REVEAL
+   Elements start visible for no-JS users; the script opts them in.
+   ========================================================================= */
+
+[data-reveal] {
+  opacity: 1;
+}
+
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, calc(18px * var(--motion)), 0);
+  transition:
+    opacity calc(var(--d-reveal) * var(--motion, 1)) var(--e-out),
+    transform calc(var(--d-reveal) * var(--motion, 1)) var(--e-out);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+html.js [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ============================================================================
+   CUSTOM CURSOR
+   Injected by script, desktop pointers only. The native cursor is never hidden,
+   so nothing is lost if this fails to render.
+   ========================================================================= */
+
+.cursor {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-cursor);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--d-base) var(--e-out);
+}
+
+.cursor.is-visible {
+  opacity: 1;
+}
+
+.cursor__ring,
+.cursor__dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.cursor__ring {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  transition:
+    width var(--d-base) var(--e-out),
+    height var(--d-base) var(--e-out),
+    border-color var(--d-base) var(--e-out),
+    background-color var(--d-base) var(--e-out);
+}
+
+.cursor__dot {
+  width: 4px;
+  height: 4px;
+  background: var(--c-ember);
+  transition: opacity var(--d-fast) var(--e-out);
+}
+
+.cursor.is-active .cursor__ring {
+  width: 44px;
+  height: 44px;
+  border-color: var(--c-ember);
+  background: rgb(255 157 92 / 8%);
+}
+
+.cursor.is-active .cursor__dot {
+  opacity: 0;
+}
+
+.cursor.is-down .cursor__ring {
+  width: 22px;
+  height: 22px;
+}
+
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .cursor {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   PRINT
+   ========================================================================= */
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .site-nav,
+  .cursor,
+  canvas,
+  .hero__scroll {
+    display: none !important;
+  }
+}

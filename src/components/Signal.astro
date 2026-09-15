@@ -1,0 +1,381 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import SectionHeader from './SectionHeader.astro';
+import { url } from '../lib/site';
+
+const profile = (await getEntry('profile', 'profile'))!.data;
+const credentials = (await getCollection('credentials', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+const channels = [
+  ...profile.socials.map((social) => ({
+    label: social.label,
+    value: social.handle ?? social.href.replace(/^https?:\/\//, ''),
+    href: social.href,
+    external: true,
+  })),
+  {
+    label: profile.resume.label,
+    value: profile.resume.updated ? `Updated ${profile.resume.updated.replace('-', '.')}` : 'PDF',
+    href: url(profile.resume.href),
+    external: false,
+  },
+];
+---
+
+<section class="section signal" id="signal" aria-labelledby="signal-title">
+  <div class="shell">
+    <SectionHeader
+      index="05"
+      id="signal-title"
+      title="Signal"
+      align="start"
+    />
+
+    <div class="signal__grid">
+      <div class="signal__primary" data-reveal>
+        <p class="signal__headline">
+          Open to conversations about AI tooling, platform engineering and automation
+          problems that look unsolvable on a whiteboard.
+        </p>
+
+        <div class="signal__transmit">
+          <span class="signal__rings" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <a class="signal__email" href={`mailto:${profile.email}`} data-magnetic>
+            {profile.email}
+          </a>
+        </div>
+
+        <div class="signal__actions">
+          <a class="btn btn--primary" href={`mailto:${profile.email}`}>
+            Send a message
+            <svg class="btn__icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M3 8h10M9 4l4 4-4 4"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+          </a>
+          <button class="btn btn--ghost signal__copy" type="button" data-copy={profile.email}>
+            <span class="signal__copy-idle">Copy address</span>
+            <span class="signal__copy-done">Copied</span>
+          </button>
+        </div>
+      </div>
+
+      <ul class="channels" role="list" data-reveal data-reveal-delay="90">
+        {
+          channels.map((channel) => (
+            <li>
+              <a
+                class="channel"
+                href={channel.href}
+                rel={channel.external ? 'noopener noreferrer me' : undefined}
+                target={channel.external ? '_blank' : undefined}
+                download={channel.external ? undefined : true}
+              >
+                <span class="channel__label mono">{channel.label}</span>
+                <span class="channel__value">{channel.value}</span>
+                <svg class="channel__icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path
+                    d="M5 11 11 5m0 0H6m5 0v5"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    {
+      credentials.length > 0 && (
+        <div class="logbook" data-reveal>
+          <h3 class="label logbook__label">Logbook</h3>
+          <ul class="logbook__list" role="list">
+            {credentials.map((item) => (
+              <li class="logbook__item">
+                <span class="mono logbook__kind">{item.data.kind}</span>
+                <span class="logbook__title">
+                  {item.data.href ? (
+                    <a href={item.data.href} rel="noopener noreferrer" target="_blank">
+                      {item.data.title}
+                    </a>
+                  ) : (
+                    item.data.title
+                  )}
+                </span>
+                <span class="logbook__meta">
+                  {item.data.issuer} · {item.data.date}
+                </span>
+                {item.data.detail && <span class="logbook__detail">{item.data.detail}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .signal {
+    padding-block-end: var(--sp-3xl);
+  }
+
+  .signal__grid {
+    display: grid;
+    gap: var(--sp-2xl);
+  }
+
+  .signal__headline {
+    max-width: 30ch;
+    font-size: var(--step-3);
+    font-weight: 250;
+    line-height: 1.22;
+    letter-spacing: var(--ls-display);
+    color: var(--c-text-strong);
+    text-wrap: balance;
+  }
+
+  /* ------------------------------------------------------------- transmit */
+
+  .signal__transmit {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-block: var(--sp-xl) var(--sp-l);
+    padding-inline-start: 3.25rem;
+  }
+
+  .signal__rings {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    translate: 0 -50%;
+  }
+
+  .signal__rings::before {
+    content: '';
+    position: absolute;
+    inset: 2.5px;
+    border-radius: 50%;
+    background: var(--c-ember);
+  }
+
+  .signal__rings span {
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--c-ember);
+    border-radius: 50%;
+    opacity: 0;
+    animation: transmit calc(4s / max(var(--motion), 0.001)) var(--e-out) infinite;
+  }
+
+  .signal__rings span:nth-child(2) {
+    animation-delay: calc(1.33s / max(var(--motion), 0.001));
+  }
+
+  .signal__rings span:nth-child(3) {
+    animation-delay: calc(2.66s / max(var(--motion), 0.001));
+  }
+
+  @keyframes transmit {
+    0% {
+      opacity: 0.7;
+      transform: scale(0.6);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(4.4);
+    }
+  }
+
+  .signal__email {
+    font-size: var(--step-2);
+    font-weight: 300;
+    letter-spacing: var(--ls-heading);
+    color: var(--c-text);
+    border-block-end: 1px solid var(--c-line-strong);
+    padding-block-end: 0.15rem;
+    word-break: break-word;
+    transition: color var(--d-base) var(--e-out), border-color var(--d-base) var(--e-out);
+  }
+
+  .signal__email:hover {
+    color: var(--c-ember-hot);
+    border-block-end-color: var(--c-ember);
+  }
+
+  .signal__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-s);
+  }
+
+  .signal__copy {
+    position: relative;
+  }
+
+  .signal__copy-done {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    color: var(--c-ember-hot);
+    transition: opacity var(--d-fast) var(--e-out);
+  }
+
+  .signal__copy[data-state='copied'] .signal__copy-idle {
+    opacity: 0;
+  }
+
+  .signal__copy[data-state='copied'] .signal__copy-done {
+    opacity: 1;
+  }
+
+  /* ------------------------------------------------------------- channels */
+
+  .channels {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    align-content: start;
+    border-block-start: 1px solid var(--c-line);
+  }
+
+  .channel {
+    display: grid;
+    grid-template-columns: minmax(5rem, auto) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--sp-m);
+    padding-block: var(--sp-m);
+    border-block-end: 1px solid var(--c-line);
+    transition: padding-inline-start var(--d-base) var(--e-out);
+  }
+
+  .channel:hover {
+    padding-inline-start: 0.6rem;
+  }
+
+  .channel__label {
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-dim);
+  }
+
+  .channel__value {
+    font-size: var(--step--1);
+    color: var(--c-text);
+    overflow-wrap: anywhere;
+  }
+
+  .channel__icon {
+    width: 1rem;
+    height: 1rem;
+    color: var(--c-dim);
+    transition: color var(--d-base) var(--e-out), transform var(--d-base) var(--e-out);
+  }
+
+  .channel:hover .channel__icon {
+    color: var(--c-ember);
+    transform: translate(2px, -2px);
+  }
+
+  /* -------------------------------------------------------------- logbook */
+
+  .logbook {
+    margin-block-start: var(--sp-3xl);
+    padding-block-start: var(--sp-l);
+    border-block-start: 1px solid var(--c-line);
+  }
+
+  .logbook__label {
+    margin-block-end: var(--sp-m);
+  }
+
+  .logbook__list {
+    display: grid;
+    gap: var(--sp-m);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .logbook__item {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .logbook__kind {
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-ion);
+  }
+
+  .logbook__title {
+    font-size: var(--step-1);
+    font-weight: 300;
+    color: var(--c-text);
+  }
+
+  .logbook__meta,
+  .logbook__detail {
+    font-size: var(--step--2);
+    color: var(--c-faint);
+  }
+
+  /* ---------------------------------------------------------- breakpoints */
+
+  @media (min-width: 52rem) {
+    .logbook__list {
+      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      gap: var(--sp-l);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .signal__grid {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: var(--sp-4xl);
+      align-items: start;
+    }
+
+    .signal__headline {
+      font-size: var(--step-4);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .signal__rings span {
+      animation: none;
+      opacity: 0.25;
+    }
+
+    .signal__rings span:nth-child(2) {
+      transform: scale(2);
+      opacity: 0.15;
+    }
+
+    .signal__rings span:nth-child(3) {
+      transform: scale(3.2);
+      opacity: 0.08;
+    }
+  }
+</style>

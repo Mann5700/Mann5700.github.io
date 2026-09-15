@@ -1,0 +1,414 @@
+---
+import { getEntry } from 'astro:content';
+import { SECTIONS, url } from '../lib/site';
+
+interface Props {
+  sectionNav?: boolean;
+}
+const { sectionNav = true } = Astro.props;
+
+const profile = (await getEntry('profile', 'profile'))!.data;
+const initials = profile.name
+  .split(' ')
+  .map((part) => part[0])
+  .join('');
+---
+
+<header class="site-nav" data-nav>
+  <div class="site-nav__inner">
+    <a class="brand" href={url('/')} aria-label={`${profile.name} — home`}>
+      <span class="brand__mark" aria-hidden="true">{initials}</span>
+      <span class="brand__text">
+        <span class="brand__name">{profile.name}</span>
+        <span class="brand__role">{profile.role}</span>
+      </span>
+    </a>
+
+    {
+      sectionNav && (
+        <nav class="site-nav__sections" aria-label="Sections">
+          <ul role="list">
+            {SECTIONS.map((section) => (
+              <li>
+                <a class="navlink" href={url(`/#${section.id}`)} data-nav-link>
+                  <span class="navlink__index" aria-hidden="true">
+                    {section.index}
+                  </span>
+                  <span class="navlink__label">{section.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+
+    <div class="site-nav__actions">
+      <a class="btn btn--ghost site-nav__resume" href={url(profile.resume.href)} download>
+        {profile.resume.label}
+      </a>
+
+      <button
+        class="site-nav__toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="nav-panel"
+        aria-label="Open menu"
+        data-nav-toggle
+      >
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="site-nav__progress" aria-hidden="true" data-scroll-progress></div>
+
+  <div class="nav-panel" id="nav-panel" data-nav-panel>
+    <nav aria-label="Menu">
+      <ul role="list">
+        {
+          SECTIONS.map((section) => (
+            <li>
+              <a href={url(`/#${section.id}`)}>
+                <span class="mono nav-panel__index">{section.index}</span>
+                <span>{section.label}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <div class="nav-panel__foot">
+      <a class="btn btn--primary" href={url(profile.resume.href)} download>
+        {profile.resume.label}
+      </a>
+      <ul class="nav-panel__social" role="list">
+        {profile.socials.map((social) => <li><a href={social.href} rel="me noopener">{social.label}</a></li>)}
+      </ul>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-nav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: var(--z-nav);
+    border-block-end: 1px solid transparent;
+    transition:
+      background-color var(--d-base) var(--e-out),
+      border-color var(--d-base) var(--e-out),
+      backdrop-filter var(--d-base) var(--e-out);
+  }
+
+  /* Keeps the wordmark readable where the accretion disk sits under the nav. */
+  .site-nav::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 -2rem;
+    background: linear-gradient(180deg, rgb(5 6 10 / 82%), transparent);
+    pointer-events: none;
+    transition: opacity var(--d-base) var(--e-out);
+  }
+
+  .site-nav.is-condensed::before {
+    opacity: 0;
+  }
+
+  .site-nav__inner,
+  .site-nav__progress {
+    position: relative;
+  }
+
+  .site-nav.is-condensed {
+    background: var(--c-glass);
+    border-block-end-color: var(--c-line);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  .site-nav__inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-m);
+    width: 100%;
+    max-width: var(--w-wide);
+    min-height: var(--nav-h);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+    padding-block: 0.6rem;
+  }
+
+  /* ------------------------------------------------------------------ brand */
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    flex: none;
+  }
+
+  .brand__mark {
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 50%;
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--c-text);
+    transition: border-color var(--d-base) var(--e-out), box-shadow var(--d-base) var(--e-out);
+  }
+
+  .brand:hover .brand__mark {
+    border-color: var(--c-ember);
+    box-shadow: 0 0 0 4px rgb(255 157 92 / 8%);
+  }
+
+  .brand__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+
+  .brand__name {
+    font-size: var(--step--1);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .brand__role {
+    display: none;
+    font-family: var(--f-mono);
+    font-size: 0.64rem;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-faint);
+  }
+
+  /* --------------------------------------------------------------- sections */
+
+  .site-nav__sections {
+    display: none;
+  }
+
+  .site-nav__sections ul {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .navlink {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--r-pill);
+    font-size: var(--step--1);
+    color: var(--c-faint);
+    transition: color var(--d-base) var(--e-out);
+  }
+
+  .navlink__index {
+    font-family: var(--f-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    color: var(--c-dim);
+    transition: color var(--d-base) var(--e-out);
+  }
+
+  .navlink:hover {
+    color: var(--c-text);
+  }
+
+  .navlink.is-active {
+    color: var(--c-text);
+  }
+
+  .navlink.is-active .navlink__index {
+    color: var(--c-ember);
+  }
+
+  .navlink.is-active::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0.75rem;
+    bottom: 0.15rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--c-ember), transparent);
+  }
+
+  /* ---------------------------------------------------------------- actions */
+
+  .site-nav__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: none;
+  }
+
+  .site-nav__resume {
+    display: none;
+    min-height: 2.5rem;
+    padding: 0.5rem 1.1rem;
+  }
+
+  .site-nav__toggle {
+    display: grid;
+    place-content: center;
+    gap: 5px;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .site-nav__toggle span {
+    display: block;
+    width: 15px;
+    height: 1.5px;
+    background: var(--c-text);
+    transition: transform var(--d-base) var(--e-out), opacity var(--d-fast) var(--e-out);
+  }
+
+  .site-nav__toggle[aria-expanded='true'] span:first-child {
+    transform: translateY(3.25px) rotate(45deg);
+  }
+
+  .site-nav__toggle[aria-expanded='true'] span:last-child {
+    transform: translateY(-3.25px) rotate(-45deg);
+  }
+
+  /* --------------------------------------------------------------- progress */
+
+  .site-nav__progress {
+    height: 1px;
+    background: var(--c-line);
+    transform-origin: 0 50%;
+  }
+
+  .site-nav__progress::after {
+    content: '';
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--c-ember-deep), var(--c-ember-hot));
+    transform: scaleX(var(--progress, 0));
+    transform-origin: 0 50%;
+    opacity: 0;
+    transition: opacity var(--d-base) var(--e-out);
+  }
+
+  .site-nav.is-condensed .site-nav__progress::after {
+    opacity: 1;
+  }
+
+  /* ------------------------------------------------------------- nav panel */
+
+  .nav-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: calc(var(--nav-h) + 2rem) var(--gutter) max(2rem, env(safe-area-inset-bottom));
+    background: rgb(5 6 10 / 94%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      opacity var(--d-base) var(--e-out),
+      visibility 0s linear var(--d-base);
+  }
+
+  .nav-panel[data-open] {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0s;
+  }
+
+  .nav-panel nav ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav-panel nav a {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding-block: 0.7rem;
+    border-block-end: 1px solid var(--c-line);
+    font-size: var(--step-3);
+    font-weight: 300;
+    letter-spacing: var(--ls-heading);
+  }
+
+  .nav-panel__index {
+    color: var(--c-dim);
+    font-size: 0.7rem;
+  }
+
+  .nav-panel__foot {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-m);
+    padding-block-start: var(--sp-l);
+  }
+
+  .nav-panel__social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-m);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--f-mono);
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-faint);
+  }
+
+  /* ----------------------------------------------------------- breakpoints */
+
+  @media (min-width: 30rem) {
+    .brand__role {
+      display: block;
+    }
+  }
+
+  @media (min-width: 48rem) {
+    .site-nav__resume {
+      display: inline-flex;
+    }
+  }
+
+  @media (min-width: 60rem) {
+    .site-nav__sections {
+      display: block;
+    }
+
+    .site-nav__toggle,
+    .nav-panel {
+      display: none;
+    }
+  }
+</style>

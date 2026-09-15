@@ -1,0 +1,69 @@
+---
+import Base from '../layouts/Base.astro';
+import Cosmos from '../components/Cosmos.astro';
+import { url } from '../lib/site';
+---
+
+<Base
+  title="Signal lost — Mann Patel"
+  description="That page is not on the map."
+  path="/404"
+  sectionNav={false}
+>
+  <Cosmos ambient />
+
+  <section class="lost">
+    <div class="shell">
+      <p class="mono lost__code">404 · No signal</p>
+      <h1 class="lost__title">This coordinate is empty.</h1>
+      <p class="lost__text">
+        Whatever used to be here has moved or never existed. The rest of the site is
+        still where you left it.
+      </p>
+      <div class="lost__actions">
+        <a class="btn btn--primary" href={url('/')} data-magnetic>Return to start</a>
+        <a class="btn" href={url('/#missions')}>View missions</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lost {
+    position: relative;
+    z-index: var(--z-content);
+    display: grid;
+    align-items: center;
+    min-height: 100svh;
+    padding-block: calc(var(--nav-h) + var(--sp-3xl)) var(--sp-3xl);
+  }
+
+  .lost__code {
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-ember);
+  }
+
+  .lost__title {
+    max-width: 16ch;
+    margin-block: var(--sp-m);
+    font-size: var(--step-5);
+    font-weight: 200;
+    letter-spacing: var(--ls-mega);
+    color: var(--c-text-strong);
+  }
+
+  .lost__text {
+    max-width: 44ch;
+    color: var(--c-muted);
+    font-weight: 300;
+  }
+
+  .lost__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-s);
+    margin-block-start: var(--sp-l);
+  }
+</style>

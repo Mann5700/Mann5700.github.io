@@ -1,0 +1,70 @@
+---
+interface Props {
+  index: string;
+  id?: string;
+  title: string;
+  lede?: string;
+  align?: 'start' | 'between';
+}
+
+const { index, id, title, lede, align = 'between' } = Astro.props;
+---
+
+<header class:list={['sec-head', `sec-head--${align}`]} data-reveal>
+  <div class="sec-head__meta">
+    <span class="sec-head__index mono">{index}</span>
+    <span class="sec-head__rule" aria-hidden="true"></span>
+    <h2 class="sec-head__title" id={id}>{title}</h2>
+  </div>
+  {lede && <p class="sec-head__lede lede">{lede}</p>}
+</header>
+
+<style>
+  .sec-head {
+    display: grid;
+    gap: var(--sp-m);
+    margin-block-end: var(--sp-2xl);
+  }
+
+  .sec-head__meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .sec-head__index {
+    color: var(--c-ember);
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+  }
+
+  .sec-head__rule {
+    width: clamp(1.5rem, 5vw, 4rem);
+    height: 1px;
+    background: linear-gradient(90deg, var(--c-ember), transparent);
+  }
+
+  .sec-head__title {
+    font-size: var(--step-2);
+    font-weight: 400;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-text);
+  }
+
+  .sec-head__lede {
+    max-width: 44ch;
+  }
+
+  @media (min-width: 60rem) {
+    .sec-head--between {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+      align-items: end;
+      gap: var(--sp-xl);
+    }
+
+    .sec-head--between .sec-head__lede {
+      justify-self: end;
+    }
+  }
+</style>

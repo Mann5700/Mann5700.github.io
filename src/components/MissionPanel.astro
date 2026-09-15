@@ -1,0 +1,208 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>['data'];
+}
+
+const { project } = Astro.props;
+
+/* Precomputed ellipse perimeters so the travelling dash loops seamlessly. */
+const rings = [
+  { rx: 62, ry: 22, len: 279, dur: 14 },
+  { rx: 96, ry: 34, len: 432, dur: 21 },
+  { rx: 130, ry: 46, len: 585, dur: 31 },
+];
+---
+
+<figure class="panel" data-reveal data-reveal-delay="120">
+  <div class="panel__frame">
+    <div class="panel__head">
+      <span class="mono">Telemetry</span>
+      <span class="mono panel__status">{project.status} · {project.year.split('-')[0]}</span>
+    </div>
+
+    <div class="panel__stage">
+      <svg class="orbit" viewBox="0 0 320 320" aria-hidden="true" focusable="false">
+        <defs>
+          <radialGradient id={`core-${project.title.replace(/\W/g, '')}`} cx="50%" cy="50%">
+            <stop offset="0%" stop-color="var(--t-accent)" stop-opacity="0.9"></stop>
+            <stop offset="55%" stop-color="var(--t-accent)" stop-opacity="0.12"></stop>
+            <stop offset="100%" stop-color="var(--t-accent)" stop-opacity="0"></stop>
+          </radialGradient>
+        </defs>
+
+        <g transform="rotate(-18 160 160)">
+          {
+            rings.map((ring, i) => (
+              <g class="orbit__ring" style={`--len:${ring.len};--dur:${ring.dur}s;--delay:${i * -4}s`}>
+                <ellipse cx="160" cy="160" rx={ring.rx} ry={ring.ry} class="orbit__path" />
+                <ellipse cx="160" cy="160" rx={ring.rx} ry={ring.ry} class="orbit__sat" />
+              </g>
+            ))
+          }
+        </g>
+
+        <circle
+          cx="160"
+          cy="160"
+          r="52"
+          fill={`url(#core-${project.title.replace(/\W/g, '')})`}
+          class="orbit__halo"></circle>
+        <circle cx="160" cy="160" r="18" class="orbit__disc"></circle>
+        <circle cx="160" cy="160" r="20.5" class="orbit__ringlight"></circle>
+      </svg>
+    </div>
+
+    {
+      project.outcomes.length > 0 && (
+        <dl class="panel__telemetry">
+          {project.outcomes.map((outcome) => (
+            <div class="cell">
+              <dd class="cell__value">{outcome.value}</dd>
+              <dt class="cell__label">{outcome.label}</dt>
+            </div>
+          ))}
+        </dl>
+      )
+    }
+  </div>
+</figure>
+
+<style>
+  .panel {
+    margin: 0;
+  }
+
+  .panel__frame {
+    position: relative;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-l);
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 3%), transparent 45%),
+      rgb(8 11 18 / 72%);
+    box-shadow: var(--sh-l), var(--sh-inset);
+    overflow: hidden;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .panel__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-s);
+    padding: 0.85rem var(--sp-m);
+    border-block-end: 1px solid var(--c-line);
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-dim);
+  }
+
+  .panel__status {
+    color: var(--t-accent);
+  }
+
+  .panel__stage {
+    display: grid;
+    place-items: center;
+    padding: var(--sp-s);
+  }
+
+  .orbit {
+    width: min(100%, 22rem);
+    height: auto;
+    overflow: visible;
+  }
+
+  .orbit__path {
+    fill: none;
+    stroke: var(--c-line-strong);
+    stroke-width: 1;
+  }
+
+  .orbit__sat {
+    fill: none;
+    stroke: var(--t-accent);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-dasharray: 4 calc(var(--len) - 4);
+    animation: travel var(--dur) linear infinite;
+    animation-delay: var(--delay);
+  }
+
+  @keyframes travel {
+    to {
+      stroke-dashoffset: calc(var(--len) * -1);
+    }
+  }
+
+  .orbit__disc {
+    fill: #000;
+  }
+
+  .orbit__ringlight {
+    fill: none;
+    stroke: var(--t-accent);
+    stroke-width: 1.2;
+    opacity: 0.85;
+  }
+
+  .orbit__halo {
+    opacity: 0.55;
+  }
+
+  /* ------------------------------------------------------------ telemetry */
+
+  .panel__telemetry {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    background: var(--c-line);
+    border-block-start: 1px solid var(--c-line);
+  }
+
+  .cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: var(--sp-s) var(--sp-m);
+    background: rgb(8 11 18 / 92%);
+  }
+
+  /* An odd final metric spans the row rather than leaving a dead cell. */
+  .cell:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  /* An odd final reading spans the row rather than leaving a dead cell. */
+  .cell:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .cell__value {
+    margin: 0;
+    font-size: var(--step-2);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: var(--ls-display);
+    color: var(--c-text-strong);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cell__label {
+    font-size: var(--step--2);
+    line-height: 1.35;
+    color: var(--c-faint);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .orbit__sat {
+      animation: none;
+      stroke-dasharray: 2 10;
+      opacity: 0.55;
+    }
+  }
+</style>

@@ -1,0 +1,108 @@
+---
+import '@fontsource-variable/inter/wght.css';
+import '@fontsource-variable/jetbrains-mono/wght.css';
+import interFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import monoFont from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url';
+import '../styles/global.css';
+
+import { getEntry } from 'astro:content';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { absolute, url } from '../lib/site';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  /** Overrides the default social preview image. Path under /public. */
+  image?: string;
+  imageAlt?: string;
+  jsonLd?: Record<string, unknown>;
+  /** Hides the in-page section navigation on sub-pages. */
+  sectionNav?: boolean;
+}
+
+const { title, description, path, image, imageAlt, jsonLd, sectionNav = true } = Astro.props;
+
+const profileEntry = await getEntry('profile', 'profile');
+if (!profileEntry) {
+  throw new Error(
+    'No profile content found. Expected src/content/profile/profile.md — see README.md.',
+  );
+}
+const profile = profileEntry.data;
+
+const canonical = absolute(path, Astro.site);
+const ogImage = absolute(image ?? '/og/og.png', Astro.site);
+const ogImageAlt = imageAlt ?? `${profile.name} — ${profile.role}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#05060a" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={profile.name} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={`${profile.name} — ${profile.role}`} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAlt} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={url('/icons/apple-touch-icon.png')} />
+    <link rel="manifest" href={url('/site.webmanifest')} />
+
+    <link rel="preload" as="font" type="font/woff2" href={interFont} crossorigin="anonymous" />
+    <link rel="preload" as="font" type="font/woff2" href={monoFont} crossorigin="anonymous" />
+
+    <link rel="sitemap" href={url('/sitemap-index.xml')} />
+
+    {jsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
+    {/* Marks the document as scriptable before first paint so reveal animations
+        never flash. If the enhancement bundle never reports back — blocked,
+        404'd, or unsupported — the class is dropped and all content appears. */}
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      setTimeout(function () {
+        if (!document.documentElement.hasAttribute('data-enhanced')) {
+          document.documentElement.classList.remove('js');
+        }
+      }, 1500);
+    </script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <Nav sectionNav={sectionNav} />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer />
+
+    <script>
+      import '../scripts/ui';
+    </script>
+  </body>
+</html>

@@ -1,0 +1,112 @@
+---
+import { getEntry } from 'astro:content';
+import { url } from '../lib/site';
+
+const profile = (await getEntry('profile', 'profile'))!.data;
+const year = new Date().getUTCFullYear();
+---
+
+<footer class="site-foot">
+  <div class="shell shell--wide site-foot__inner">
+    <p class="site-foot__mark">
+      <span class="site-foot__name">{profile.name}</span>
+      <span class="site-foot__meta mono">{profile.location}</span>
+    </p>
+
+    <nav class="site-foot__links" aria-label="Elsewhere">
+      <ul role="list">
+        {
+          profile.socials.map((social) => (
+            <li>
+              <a href={social.href} rel="me noopener noreferrer" target="_blank">
+                {social.label}
+              </a>
+            </li>
+          ))
+        }
+        <li><a href={`mailto:${profile.email}`}>Email</a></li>
+        <li><a href={url(profile.resume.href)} download>{profile.resume.label}</a></li>
+      </ul>
+    </nav>
+
+    <p class="site-foot__colophon mono">
+      © {year} · Built with Astro · No trackers, no cookies
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-foot {
+    position: relative;
+    z-index: var(--z-content);
+    border-block-start: 1px solid var(--c-line);
+    background: linear-gradient(180deg, transparent, rgb(0 0 0 / 45%));
+  }
+
+  .site-foot__inner {
+    display: grid;
+    gap: var(--sp-m);
+    padding-block: var(--sp-l) max(var(--sp-l), env(safe-area-inset-bottom));
+  }
+
+  .site-foot__mark {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 0.9rem;
+  }
+
+  .site-foot__name {
+    font-size: var(--step--1);
+    color: var(--c-text);
+  }
+
+  .site-foot__meta {
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-dim);
+  }
+
+  .site-foot__links ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem var(--sp-m);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-foot__links a {
+    font-size: var(--step--1);
+    color: var(--c-muted);
+    border-block-end: 1px solid transparent;
+    transition: color var(--d-fast) var(--e-out), border-color var(--d-fast) var(--e-out);
+  }
+
+  .site-foot__links a:hover {
+    color: var(--c-text);
+    border-block-end-color: var(--c-line-strong);
+  }
+
+  .site-foot__colophon {
+    font-size: var(--step--2);
+    letter-spacing: 0.04em;
+    color: var(--c-dim);
+  }
+
+  @media (min-width: 52rem) {
+    .site-foot__inner {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: center;
+    }
+
+    .site-foot__links ul {
+      justify-content: center;
+    }
+
+    .site-foot__colophon {
+      text-align: end;
+    }
+  }
+</style>

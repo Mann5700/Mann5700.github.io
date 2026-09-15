@@ -1,0 +1,31 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment
+.env
+.env.production
+.env.local
+
+# local registry/proxy overrides (see README → Troubleshooting)
+.npmrc
+
+# the served copy lives in public/resume/ — keep the working copy out of git
+/*.pdf
+
+# editors / os
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/

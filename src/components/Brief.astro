@@ -1,0 +1,134 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import { formatRange } from '../lib/site';
+
+const entry = (await getEntry('profile', 'profile'))!;
+const { Content } = await render(entry);
+const profile = entry.data;
+
+const roles = (await getCollection('experience')).sort((a, b) => a.data.order - b.data.order);
+const current = roles.find((role) => role.data.current);
+const education = (await getCollection('education')).sort((a, b) => a.data.order - b.data.order);
+const top = education[0];
+
+const facts = [
+  { label: 'Based in', value: profile.location },
+  current ? { label: 'Currently', value: `${current.data.role}, ${current.data.company}` } : null,
+  top
+    ? {
+        label: 'Studied',
+        value: `${top.data.credential}${top.data.field ? `, ${top.data.field}` : ''}`,
+        note: `${top.data.institution} · ${formatRange(top.data.start, top.data.end)}`,
+      }
+    : null,
+].filter((fact): fact is { label: string; value: string; note?: string } => Boolean(fact));
+---
+
+<section class="section brief" aria-label="About">
+  <div class="shell">
+    <div class="brief__grid">
+      <aside class="brief__aside" data-reveal>
+        <span class="label">Profile</span>
+        <dl class="brief__facts">
+          {
+            facts.map((fact) => (
+              <div class="brief__fact">
+                <dt>{fact.label}</dt>
+                <dd>
+                  {fact.value}
+                  {fact.note && <span class="brief__note">{fact.note}</span>}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+      </aside>
+
+      <div class="brief__body prose" data-reveal data-reveal-delay="90">
+        <Content />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .brief {
+    padding-block: var(--sp-4xl);
+  }
+
+  .brief__grid {
+    display: grid;
+    gap: var(--sp-xl);
+  }
+
+  /* ----------------------------------------------------------------- aside */
+
+  .brief__aside {
+    display: grid;
+    gap: var(--sp-m);
+    align-content: start;
+  }
+
+  .brief__facts {
+    display: grid;
+    gap: var(--sp-s);
+    margin: 0;
+  }
+
+  .brief__fact {
+    display: grid;
+    gap: 0.15rem;
+    padding-block-start: 0.75rem;
+    border-block-start: 1px solid var(--c-line);
+  }
+
+  .brief__fact dt {
+    font-family: var(--f-mono);
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-dim);
+  }
+
+  .brief__fact dd {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--c-text);
+  }
+
+  .brief__note {
+    display: block;
+    margin-block-start: 0.1rem;
+    font-size: var(--step--2);
+    color: var(--c-faint);
+  }
+
+  /* ------------------------------------------------------------------ body */
+
+  .brief__body {
+    max-width: 58ch;
+    font-size: var(--step-1);
+    line-height: 1.68;
+    color: var(--c-muted);
+  }
+
+  .brief__body :global(p:first-child) {
+    font-size: var(--step-2);
+    line-height: 1.45;
+    letter-spacing: var(--ls-heading);
+    color: var(--c-text);
+    font-weight: 300;
+  }
+
+  @media (min-width: 60rem) {
+    .brief__grid {
+      grid-template-columns: minmax(14rem, 20rem) minmax(0, 1fr);
+      gap: var(--sp-4xl);
+    }
+
+    .brief__aside {
+      position: sticky;
+      top: calc(var(--nav-h) + 3rem);
+    }
+  }
+</style>

@@ -1,0 +1,470 @@
+---
+import { getCollection } from 'astro:content';
+import SectionHeader from './SectionHeader.astro';
+import MissionPanel from './MissionPanel.astro';
+import { url } from '../lib/site';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const featured = projects.filter((project) => project.data.featured);
+const rest = projects.filter((project) => !project.data.featured);
+
+const archiveHref = 'https://github.com/Mann5700?tab=repositories';
+---
+
+<section class="section" id="missions" aria-labelledby="missions-title">
+  <div class="shell">
+    <SectionHeader
+      index="03"
+      id="missions-title"
+      title="Missions"
+      lede="Systems I designed and built end to end. Each one started with a process that was costing somebody hours."
+    />
+  </div>
+
+  <div class="features">
+    {
+      featured.map((project, i) => (
+        <article
+          class:list={['feature', i % 2 === 1 && 'feature--flip']}
+          data-theme={project.data.theme}
+          data-reveal
+        >
+          <div class="feature__glow" aria-hidden="true" />
+          <div class="shell feature__inner">
+            <div class="feature__copy">
+              <p class="feature__eyebrow">
+                <span class="mono feature__id">M-{String(i + 1).padStart(2, '0')}</span>
+                <span class="feature__tagline">{project.data.tagline}</span>
+              </p>
+
+              <h3 class="feature__title">
+                <a href={url(`/missions/${project.id}`)}>{project.data.title}</a>
+              </h3>
+
+              <p class="feature__desc">{project.data.description}</p>
+
+              {project.data.problem && (
+                <p class="feature__problem">
+                  <span class="label">The problem</span>
+                  {project.data.problem}
+                </p>
+              )}
+
+              <ul class="chip-row feature__tech" role="list">
+                {project.data.technologies.slice(0, 7).map((tech) => (
+                  <li>
+                    <span class="chip">{tech}</span>
+                  </li>
+                ))}
+                {project.data.technologies.length > 7 && (
+                  <li>
+                    <span class="chip chip--more">+{project.data.technologies.length - 7}</span>
+                  </li>
+                )}
+              </ul>
+
+              <div class="feature__actions">
+                <a class="btn btn--primary" href={url(`/missions/${project.id}`)} data-magnetic>
+                  Mission brief
+                  <svg class="btn__icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path
+                      d="M3 8h10M9 4l4 4-4 4"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </a>
+                {project.data.links.github && (
+                  <a
+                    class="btn"
+                    href={project.data.links.github}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    Source
+                  </a>
+                )}
+                {project.data.links.demo && (
+                  <a
+                    class="btn btn--ghost"
+                    href={project.data.links.demo}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    Live demo
+                  </a>
+                )}
+              </div>
+            </div>
+
+            <MissionPanel project={project.data} />
+          </div>
+        </article>
+      ))
+    }
+  </div>
+
+  <div class="shell">
+    <ul class="grid" role="list">
+      {
+        rest.map((project) => (
+          <li>
+            <article class="card" data-theme={project.data.theme} data-reveal>
+              <a class="card__link" href={url(`/missions/${project.id}`)}>
+                <span class="visually-hidden">Open the {project.data.title} mission brief</span>
+              </a>
+              <header class="card__head">
+                <span class="mono card__year">{project.data.year.split('-')[0]}</span>
+                <span class="mono card__status">{project.data.status}</span>
+              </header>
+              <h3 class="card__title">{project.data.title}</h3>
+              <p class="card__tagline">{project.data.tagline}</p>
+              <p class="card__desc">{project.data.description}</p>
+              <ul class="chip-row card__tech" role="list">
+                {project.data.technologies.slice(0, 5).map((tech) => (
+                  <li>
+                    <span class="chip">{tech}</span>
+                  </li>
+                ))}
+              </ul>
+              <span class="card__cta" aria-hidden="true">
+                Mission brief
+                <svg viewBox="0 0 16 16" fill="none">
+                  <path
+                    d="M3 8h10M9 4l4 4-4 4"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+            </article>
+          </li>
+        ))
+      }
+
+      <li>
+        <a class="archive" href={archiveHref} rel="noopener noreferrer" target="_blank" data-reveal>
+          <span class="archive__label label">Archive</span>
+          <span class="archive__text">
+            Coursework, experiments and earlier builds live on GitHub.
+          </span>
+          <span class="archive__cta mono">
+            github.com/Mann5700
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M5 11 11 5m0 0H6m5 0v5"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+          </span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<style>
+  /* ============================================================== featured */
+
+  .features {
+    display: grid;
+    gap: var(--sp-4xl);
+    margin-block-end: var(--sp-4xl);
+  }
+
+  .feature {
+    position: relative;
+    padding-block: var(--sp-2xl);
+    isolation: isolate;
+  }
+
+  .feature__glow {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--t-glow);
+    opacity: 0.9;
+  }
+
+  .feature--flip .feature__glow {
+    transform: scaleX(-1);
+  }
+
+  .feature__inner {
+    display: grid;
+    gap: var(--sp-xl);
+    align-items: center;
+  }
+
+  .feature__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-block-end: var(--sp-s);
+  }
+
+  .feature__id {
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--t-accent);
+    border-radius: var(--r-xs);
+    font-size: 0.62rem;
+    letter-spacing: var(--ls-label);
+    color: var(--t-accent);
+  }
+
+  .feature__tagline {
+    font-family: var(--f-mono);
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-faint);
+  }
+
+  .feature__title {
+    font-size: var(--step-5);
+    font-weight: 250;
+    letter-spacing: var(--ls-mega);
+    color: var(--c-text-strong);
+  }
+
+  .feature__title a {
+    background-image: linear-gradient(90deg, var(--t-accent), var(--t-accent));
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size var(--d-slow) var(--e-out);
+  }
+
+  .feature__title a:hover {
+    background-size: 100% 1px;
+  }
+
+  .feature__desc {
+    max-width: 46ch;
+    margin-block-start: var(--sp-m);
+    font-size: var(--step-1);
+    line-height: 1.6;
+    font-weight: 300;
+    color: var(--c-muted);
+  }
+
+  .feature__problem {
+    max-width: 52ch;
+    margin-block-start: var(--sp-m);
+    padding-inline-start: var(--sp-s);
+    border-inline-start: 1px solid var(--t-accent-soft);
+    font-size: var(--step--1);
+    line-height: 1.6;
+    color: var(--c-faint);
+  }
+
+  .feature__problem :global(.label) {
+    display: block;
+    margin-block-end: 0.35rem;
+    color: var(--t-accent);
+  }
+
+  .feature__tech {
+    margin-block-start: var(--sp-m);
+  }
+
+  .chip--more {
+    color: var(--c-dim);
+  }
+
+  .feature__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-s);
+    margin-block-start: var(--sp-l);
+  }
+
+  /* ================================================================== grid */
+
+  .grid {
+    display: grid;
+    gap: var(--sp-m);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--sp-l);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-l);
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 2.5%), transparent 60%),
+      rgb(11 15 24 / 70%);
+    overflow: hidden;
+    transition:
+      border-color var(--d-base) var(--e-out),
+      transform var(--d-base) var(--e-out),
+      box-shadow var(--d-base) var(--e-out);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--t-glow);
+    opacity: 0;
+    transition: opacity var(--d-slow) var(--e-out);
+    pointer-events: none;
+  }
+
+  .card:hover,
+  .card:focus-within {
+    border-color: var(--c-line-strong);
+    transform: translateY(-3px);
+    box-shadow: var(--sh-l);
+  }
+
+  .card:hover::before,
+  .card:focus-within::before {
+    opacity: 1;
+  }
+
+  .card__link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .card__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-s);
+    margin-block-end: var(--sp-l);
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-dim);
+  }
+
+  .card__status {
+    color: var(--t-accent);
+  }
+
+  .card__title {
+    font-size: var(--step-3);
+    font-weight: 300;
+    letter-spacing: var(--ls-display);
+    color: var(--c-text-strong);
+  }
+
+  .card__tagline {
+    margin-block-start: 0.25rem;
+    font-family: var(--f-mono);
+    font-size: var(--step--2);
+    letter-spacing: 0.04em;
+    color: var(--t-accent);
+  }
+
+  .card__desc {
+    margin-block-start: var(--sp-s);
+    font-size: var(--step--1);
+    line-height: 1.62;
+    color: var(--c-muted);
+  }
+
+  .card__tech {
+    margin-block: var(--sp-m) var(--sp-l);
+  }
+
+  .card__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-start: auto;
+    font-family: var(--f-mono);
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-muted);
+  }
+
+  .card__cta svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    transition: transform var(--d-base) var(--e-out);
+  }
+
+  .card:hover .card__cta svg {
+    transform: translateX(3px);
+  }
+
+  /* =============================================================== archive */
+
+  .archive {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-s);
+    height: 100%;
+    padding: var(--sp-l);
+    border: 1px dashed var(--c-line-strong);
+    border-radius: var(--r-l);
+    color: var(--c-muted);
+    transition: border-color var(--d-base) var(--e-out), color var(--d-base) var(--e-out);
+  }
+
+  .archive:hover {
+    border-color: var(--c-ember);
+    color: var(--c-text);
+  }
+
+  .archive__text {
+    max-width: 26ch;
+    font-size: var(--step--1);
+    line-height: 1.6;
+  }
+
+  .archive__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-block-start: auto;
+    font-size: var(--step--2);
+    color: var(--c-faint);
+  }
+
+  .archive__cta svg {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+
+  /* =========================================================== breakpoints */
+
+  @media (min-width: 48rem) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--sp-l);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .feature__inner {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      gap: var(--sp-4xl);
+    }
+
+    .feature--flip .feature__copy {
+      order: 2;
+    }
+  }
+</style>

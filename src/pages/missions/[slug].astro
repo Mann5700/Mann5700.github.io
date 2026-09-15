@@ -1,0 +1,561 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Cosmos from '../../components/Cosmos.astro';
+import { absolute, url } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+
+  return projects.map((project, index) => ({
+    params: { slug: project.id },
+    props: {
+      project,
+      prev: projects[index - 1] ?? projects[projects.length - 1],
+      next: projects[index + 1] ?? projects[0],
+      index,
+    },
+  }));
+}
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  prev: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+  index: number;
+}
+
+const { project, prev, next, index } = Astro.props;
+const { Content } = await render(project);
+const data = project.data;
+
+const links = [
+  data.links.github ? { label: 'Source', href: data.links.github } : null,
+  data.links.demo ? { label: 'Live demo', href: data.links.demo } : null,
+  data.links.docs ? { label: 'Documentation', href: data.links.docs } : null,
+].filter((link): link is { label: string; href: string } => Boolean(link));
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareSourceCode',
+  name: data.title,
+  description: data.description,
+  url: absolute(`/missions/${project.id}`, Astro.site),
+  ...(data.links.github ? { codeRepository: data.links.github } : {}),
+  programmingLanguage: data.technologies,
+  dateCreated: data.year,
+  author: { '@type': 'Person', name: 'Mann Patel' },
+};
+---
+
+<Base
+  title={`${data.title} — ${data.tagline} | Mann Patel`}
+  description={data.description}
+  path={`/missions/${project.id}`}
+  jsonLd={jsonLd}
+>
+  <Cosmos ambient />
+
+  <article class="mission" data-theme={data.theme}>
+    <div class="mission__aurora" aria-hidden="true"></div>
+
+    <header class="shell mission__head">
+      <a class="back" href={url('/#missions')}>
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M13 8H3m4-4-4 4 4 4"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+        </svg>
+        All missions
+      </a>
+
+      <p class="mission__eyebrow">
+        <span class="mono mission__id">M-{String(index + 1).padStart(2, '0')}</span>
+        <span class="mono mission__status">{data.status}</span>
+        <span class="mono mission__year">{data.year.split('-')[0]}</span>
+      </p>
+
+      <h1 class="mission__title">{data.title}</h1>
+      <p class="mission__tagline">{data.tagline}</p>
+      <p class="mission__desc">{data.description}</p>
+
+      {
+        links.length > 0 && (
+          <div class="mission__links">
+            {links.map((link, i) => (
+              <a
+                class:list={['btn', i === 0 ? 'btn--primary' : '']}
+                href={link.href}
+                rel="noopener noreferrer"
+                target="_blank"
+                data-magnetic
+              >
+                {link.label}
+                <svg class="btn__icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path
+                    d="M5 11 11 5m0 0H6m5 0v5"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </a>
+            ))}
+          </div>
+        )
+      }
+    </header>
+
+    {
+      data.outcomes.length > 0 && (
+        <div class="shell">
+          <dl class="results" data-reveal>
+            {data.outcomes.map((outcome) => (
+              <div class="result">
+                <dd class="result__value">{outcome.value}</dd>
+                <dt class="result__label">{outcome.label}</dt>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )
+    }
+
+    {
+      data.image && (
+        <div class="shell mission__shot" data-reveal>
+          <img src={url(data.image)} alt={data.imageAlt ?? `${data.title} interface`} loading="lazy" decoding="async" />
+        </div>
+      )
+    }
+
+    <div class="shell mission__body">
+      <div class="mission__rail">
+        <div class="rail-card" data-reveal>
+          <h2 class="label">Stack</h2>
+          <ul class="chip-row" role="list">
+            {data.technologies.map((tech) => <li><span class="chip">{tech}</span></li>)}
+          </ul>
+        </div>
+      </div>
+
+      <div class="mission__content">
+        {
+          data.problem && (
+            <section class="block" data-reveal>
+              <h2 class="block__title">
+                <span class="mono block__num">01</span>The problem
+              </h2>
+              <p class="block__lead">{data.problem}</p>
+            </section>
+          )
+        }
+
+        {
+          data.approach && (
+            <section class="block" data-reveal>
+              <h2 class="block__title">
+                <span class="mono block__num">02</span>Approach
+              </h2>
+              <p class="block__lead">{data.approach}</p>
+            </section>
+          )
+        }
+
+        {
+          data.architecture.length > 0 && (
+            <section class="block" data-reveal>
+              <h2 class="block__title">
+                <span class="mono block__num">03</span>Architecture
+              </h2>
+              <ol class="arch" role="list">
+                {data.architecture.map((item, i) => (
+                  <li class="arch__item">
+                    <span class="arch__marker mono">{String(i + 1).padStart(2, '0')}</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )
+        }
+
+        {
+          data.decisions.length > 0 && (
+            <section class="block" data-reveal>
+              <h2 class="block__title">
+                <span class="mono block__num">04</span>Engineering decisions
+              </h2>
+              <div class="decisions">
+                {data.decisions.map((decision) => (
+                  <article class="decision">
+                    <h3 class="decision__title">{decision.title}</h3>
+                    <p class="decision__detail">{decision.detail}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )
+        }
+
+        <section class="block prose mission__notes" data-reveal>
+          <Content />
+        </section>
+      </div>
+    </div>
+
+    <nav class="shell mission__nav" aria-label="Other missions">
+      <a class="hop hop--prev" href={url(`/missions/${prev.id}`)}>
+        <span class="mono hop__label">Previous</span>
+        <span class="hop__title">{prev.data.title}</span>
+      </a>
+      <a class="hop hop--next" href={url(`/missions/${next.id}`)}>
+        <span class="mono hop__label">Next</span>
+        <span class="hop__title">{next.data.title}</span>
+      </a>
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .mission {
+    position: relative;
+    z-index: var(--z-content);
+    padding-block: calc(var(--nav-h) + var(--sp-2xl)) var(--sp-3xl);
+  }
+
+  .mission__aurora {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 70vh;
+    background: var(--t-glow);
+    pointer-events: none;
+  }
+
+  /* ------------------------------------------------------------------ head */
+
+  .mission__head {
+    position: relative;
+  }
+
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-end: var(--sp-2xl);
+    font-family: var(--f-mono);
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-faint);
+    transition: color var(--d-base) var(--e-out);
+  }
+
+  .back svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    transition: transform var(--d-base) var(--e-out);
+  }
+
+  .back:hover {
+    color: var(--c-text);
+  }
+
+  .back:hover svg {
+    transform: translateX(-3px);
+  }
+
+  .mission__eyebrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-block-end: var(--sp-m);
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+  }
+
+  .mission__id {
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--t-accent);
+    border-radius: var(--r-xs);
+    color: var(--t-accent);
+  }
+
+  .mission__status {
+    color: var(--c-muted);
+  }
+
+  .mission__year {
+    color: var(--c-dim);
+  }
+
+  .mission__title {
+    font-size: var(--step-6);
+    font-weight: 200;
+    line-height: var(--lh-tight);
+    letter-spacing: var(--ls-mega);
+    color: var(--c-text-strong);
+  }
+
+  .mission__tagline {
+    margin-block-start: var(--sp-s);
+    font-family: var(--f-mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--t-accent);
+  }
+
+  .mission__desc {
+    max-width: 52ch;
+    margin-block-start: var(--sp-m);
+    font-size: var(--step-1);
+    line-height: 1.6;
+    font-weight: 300;
+    color: var(--c-muted);
+  }
+
+  .mission__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-s);
+    margin-block-start: var(--sp-l);
+  }
+
+  /* --------------------------------------------------------------- results */
+
+  .results {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin-block-start: var(--sp-3xl);
+    background: var(--c-line);
+    border-block: 1px solid var(--c-line);
+  }
+
+  .result {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.35rem;
+    padding: var(--sp-m);
+    background: var(--c-void);
+  }
+
+  .result__value {
+    margin: 0;
+    font-size: var(--step-3);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: var(--ls-display);
+    color: var(--t-accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .result__label {
+    font-size: var(--step--2);
+    line-height: 1.4;
+    color: var(--c-faint);
+  }
+
+  /* ------------------------------------------------------------------ shot */
+
+  .mission__shot {
+    margin-block-start: var(--sp-2xl);
+  }
+
+  .mission__shot img {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-l);
+  }
+
+  /* ------------------------------------------------------------------ body */
+
+  .mission__body {
+    display: grid;
+    gap: var(--sp-2xl);
+    margin-block-start: var(--sp-4xl);
+  }
+
+  .rail-card {
+    display: grid;
+    gap: var(--sp-s);
+    padding: var(--sp-m);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-m);
+    background: rgb(9 12 20 / 60%);
+  }
+
+  .mission__content {
+    display: grid;
+    gap: var(--sp-2xl);
+    min-width: 0;
+  }
+
+  .block__title {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    margin-block-end: var(--sp-m);
+    font-size: var(--step-2);
+    font-weight: 300;
+    letter-spacing: var(--ls-heading);
+    color: var(--c-text-strong);
+  }
+
+  .block__num {
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    color: var(--t-accent);
+  }
+
+  .block__lead {
+    max-width: 62ch;
+    font-size: var(--step-0);
+    line-height: 1.68;
+    color: var(--c-muted);
+  }
+
+  /* ---------------------------------------------------------- architecture */
+
+  .arch {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-block-start: 1px solid var(--c-line);
+  }
+
+  .arch__item {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: var(--sp-s);
+    padding-block: var(--sp-s);
+    border-block-end: 1px solid var(--c-line);
+    font-size: var(--step--1);
+    line-height: 1.62;
+    color: var(--c-muted);
+  }
+
+  .arch__marker {
+    font-size: var(--step--2);
+    color: var(--c-dim);
+    padding-block-start: 0.2em;
+  }
+
+  /* ------------------------------------------------------------- decisions */
+
+  .decisions {
+    display: grid;
+    gap: var(--sp-m);
+  }
+
+  .decision {
+    padding: var(--sp-m);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-m);
+    background: linear-gradient(180deg, rgb(255 255 255 / 2%), transparent 60%);
+    transition: border-color var(--d-base) var(--e-out);
+  }
+
+  .decision:hover {
+    border-color: var(--t-accent-soft);
+  }
+
+  .decision__title {
+    font-size: var(--step-1);
+    font-weight: 400;
+    color: var(--c-text);
+  }
+
+  .decision__detail {
+    max-width: 62ch;
+    margin-block-start: 0.5rem;
+    font-size: var(--step--1);
+    line-height: 1.65;
+    color: var(--c-faint);
+  }
+
+  .mission__notes {
+    padding-block-start: var(--sp-l);
+    border-block-start: 1px solid var(--c-line);
+  }
+
+  /* ------------------------------------------------------------------- nav */
+
+  .mission__nav {
+    display: grid;
+    gap: 1px;
+    margin-block-start: var(--sp-4xl);
+    background: var(--c-line);
+    border-block: 1px solid var(--c-line);
+  }
+
+  .hop {
+    display: grid;
+    gap: 0.35rem;
+    padding: var(--sp-l) var(--sp-m);
+    background: var(--c-void);
+    transition: background-color var(--d-base) var(--e-out);
+  }
+
+  .hop:hover {
+    background: var(--c-surface);
+  }
+
+  .hop__label {
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-dim);
+  }
+
+  .hop__title {
+    font-size: var(--step-2);
+    font-weight: 300;
+    letter-spacing: var(--ls-heading);
+    color: var(--c-text);
+  }
+
+  .hop--next {
+    text-align: end;
+  }
+
+  /* ----------------------------------------------------------- breakpoints */
+
+  @media (min-width: 48rem) {
+    .results {
+      grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    }
+
+    .mission__nav {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .decisions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .mission__body {
+      grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem);
+      gap: var(--sp-4xl);
+    }
+
+    .mission__rail {
+      order: 2;
+      position: sticky;
+      top: calc(var(--nav-h) + 2rem);
+      align-self: start;
+    }
+  }
+</style>

@@ -1,0 +1,291 @@
+---
+import { getCollection } from 'astro:content';
+import SectionHeader from './SectionHeader.astro';
+import { normalizeSkill } from '../lib/site';
+
+const groups = (await getCollection('skills')).sort((a, b) => a.data.order - b.data.order);
+
+/** Deterministic 0–1 from a string, so the star map never shifts between builds. */
+function seeded(input: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 10000) / 10000;
+}
+
+const W = 300;
+const H = 104;
+
+const constellations = groups.map((group) => {
+  const items = group.data.items.map(normalizeSkill);
+  const n = items.length;
+  const base = seeded(group.data.label) * Math.PI * 2;
+
+  const stars = items.map((item, i) => {
+    const t = n > 1 ? i / (n - 1) : 0.5;
+    const jitter = seeded(`${group.data.label}${item.name}`) - 0.5;
+    const x = 20 + t * (W - 40);
+    const y = H / 2 + Math.sin(base + i * 1.28) * 26 + jitter * 18;
+    return { x, y, left: (x / W) * 100, top: (y / H) * 100, core: item.core };
+  });
+
+  return {
+    group,
+    items,
+    stars,
+    path: stars.map((s) => `${s.x.toFixed(1)},${s.y.toFixed(1)}`).join(' '),
+    notes: items.filter((item) => item.note),
+  };
+});
+---
+
+<section class="section" id="constellation" aria-labelledby="constellation-title">
+  <div class="shell">
+    <SectionHeader
+      index="04"
+      id="constellation-title"
+      title="Constellation"
+      lede="Grouped by what they're for rather than by how impressive they look in a list. The brighter points are the ones I reach for first."
+    />
+
+    <ul class="groups" role="list">
+      {
+        constellations.map(({ group, items, stars, path, notes }, gi) => (
+          <li class="group" data-constellation data-reveal data-reveal-delay={gi * 60}>
+            <div class="group__head">
+              <span class="mono group__index">{String(gi + 1).padStart(2, '0')}</span>
+              <h3 class="group__label">{group.data.label}</h3>
+              {group.data.note && <p class="group__note">{group.data.note}</p>}
+            </div>
+
+            <div class="map">
+              <svg
+                class="map__web"
+                viewBox={`0 0 ${W} ${H}`}
+                preserveAspectRatio="none"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <polyline class="map__line" points={path} />
+              </svg>
+              {stars.map((star, i) => (
+                <span
+                  data-star
+                  class:list={['map__star', star.core && 'is-core']}
+                  style={`left:${star.left.toFixed(2)}%;top:${star.top.toFixed(2)}%`}
+                  title={items[i]!.name}
+                />
+              ))}
+            </div>
+
+            <ul class="chip-row group__items" role="list">
+              {items.map((item, i) => (
+                <li>
+                  <span class:list={['chip', item.core && 'chip--core']} data-star-index={i}>
+                    {item.core && <span class="chip__spark" aria-hidden="true" />}
+                    {item.name}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            {notes.length > 0 && (
+              <dl class="group__notes">
+                {notes.map((item) => (
+                  <div>
+                    <dt>{item.name}</dt>
+                    <dd>{item.note}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .groups {
+    display: grid;
+    gap: var(--sp-m);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .group {
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-l);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-l);
+    background: linear-gradient(180deg, rgb(255 255 255 / 2%), transparent 55%), rgb(9 12 20 / 55%);
+    transition: border-color var(--d-base) var(--e-out);
+  }
+
+  .group:hover {
+    border-color: var(--c-line-strong);
+  }
+
+  .group__head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.15rem 0.85rem;
+    align-items: baseline;
+  }
+
+  .group__index {
+    font-size: var(--step--2);
+    color: var(--c-dim);
+  }
+
+  .group__label {
+    font-size: var(--step-1);
+    font-weight: 400;
+    letter-spacing: var(--ls-heading);
+    color: var(--c-text-strong);
+  }
+
+  .group__note {
+    grid-column: 2;
+    max-width: 44ch;
+    font-size: var(--step--2);
+    line-height: 1.5;
+    color: var(--c-faint);
+  }
+
+  /* ------------------------------------------------------------------- map */
+
+  .map {
+    position: relative;
+    width: 100%;
+    height: 6.5rem;
+    margin-block: var(--sp-m);
+  }
+
+  .map__web {
+    width: 100%;
+    height: 100%;
+  }
+
+  .map__line {
+    fill: none;
+    stroke: rgb(255 255 255 / 13%);
+    stroke-width: 0.9;
+    stroke-dasharray: 3 4;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* Dots are DOM elements, not SVG, so they stay round at any card width. */
+  .map__star {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #97a1b6;
+    box-shadow: 0 0 6px rgb(200 214 255 / 45%);
+    translate: -50% -50%;
+    transition:
+      background-color var(--d-base) var(--e-out),
+      box-shadow var(--d-base) var(--e-out),
+      scale var(--d-base) var(--e-spring);
+  }
+
+  .map__star.is-core {
+    width: 5px;
+    height: 5px;
+    background: var(--c-ember);
+    box-shadow: 0 0 0 3px rgb(255 157 92 / 12%), 0 0 10px rgb(255 157 92 / 55%);
+  }
+
+  .map__star.is-lit {
+    background: var(--c-ember-hot);
+    box-shadow: 0 0 0 5px rgb(255 157 92 / 14%), 0 0 14px var(--c-ember);
+    scale: 1.7;
+  }
+
+  /* ----------------------------------------------------------------- chips */
+
+  .group__items {
+    margin-block-end: var(--sp-s);
+  }
+
+  .chip {
+    cursor: default;
+  }
+
+  .chip:hover,
+  .chip:focus-visible {
+    border-color: var(--c-line-strong);
+    color: var(--c-text);
+  }
+
+  .chip--core {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-color: rgb(255 157 92 / 28%);
+    background: var(--c-ember-wash);
+    color: var(--c-text);
+  }
+
+  .chip__spark {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--c-ember);
+    box-shadow: 0 0 6px var(--c-ember);
+  }
+
+  /* ----------------------------------------------------------------- notes */
+
+  .group__notes {
+    display: grid;
+    gap: 0.5rem;
+    margin: auto 0 0;
+    padding-block-start: var(--sp-s);
+    border-block-start: 1px solid var(--c-line);
+  }
+
+  .group__notes div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 0.5rem;
+    font-size: var(--step--2);
+    line-height: 1.5;
+  }
+
+  .group__notes dt {
+    color: var(--c-muted);
+    font-family: var(--f-mono);
+  }
+
+  .group__notes dt::after {
+    content: ' —';
+    color: var(--c-dim);
+  }
+
+  .group__notes dd {
+    margin: 0;
+    color: var(--c-faint);
+  }
+
+  /* ----------------------------------------------------------- breakpoints */
+
+  @media (min-width: 52rem) {
+    .groups {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--sp-l);
+    }
+
+    /* An odd final card spans the row instead of leaving a hole. */
+    .group:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+  }
+</style>
