@@ -124,92 +124,79 @@ function initNav() {
 
 /* ------------------------------------------------------------------ cursor */
 
-function initCursor() {
+/** Pulls `[data-magnetic]` controls a little toward the pointer on hover. */
+function initMagnetic() {
   if (!finePointer.matches || reduceMotion.matches) return;
 
-  const root = document.createElement('div');
-  root.className = 'cursor';
-  root.setAttribute('aria-hidden', 'true');
-  root.innerHTML = '<span class="cursor__ring"></span><span class="cursor__dot"></span>';
-  document.body.appendChild(root);
+  const targets = Array.from(document.querySelectorAll<HTMLElement>('[data-magnetic]'));
+  if (!targets.length) return;
 
-  const ring = root.querySelector<HTMLElement>('.cursor__ring')!;
-  const dot = root.querySelector<HTMLElement>('.cursor__dot')!;
+  const STRENGTH = 0.28;
+  const RANGE = 28;
 
-  let x = window.innerWidth / 2;
-  let y = window.innerHeight / 2;
-  let rx = x;
-  let ry = y;
-  let magnet: HTMLElement | null = null;
-  let visible = false;
+  for (const el of targets) {
+    let frame = 0;
+    let dx = 0;
+    let dy = 0;
+    let tx = 0;
+    let ty = 0;
+    let cx = 0;
+    let cy = 0;
 
-  window.addEventListener(
-    'pointermove',
-    (e) => {
+    const settle = () => {
+      dx += (tx - dx) * 0.2;
+      dy += (ty - dy) * 0.2;
+      if (Math.abs(tx - dx) > 0.1 || Math.abs(ty - dy) > 0.1) {
+        el.style.transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0)`;
+        frame = requestAnimationFrame(settle);
+        return;
+      }
+      dx = tx;
+      dy = ty;
+      el.style.transform = tx === 0 && ty === 0 ? '' : `translate3d(${tx}px, ${ty}px, 0)`;
+      frame = 0;
+    };
+
+    const queue = () => {
+      if (!frame) frame = requestAnimationFrame(settle);
+    };
+
+    // Measured on enter and offset by any transform still decaying, so the
+    // element never chases a centre that its own movement is shifting.
+    const anchor = () => {
+      const r = el.getBoundingClientRect();
+      cx = r.left + r.width / 2 - dx;
+      cy = r.top + r.height / 2 - dy;
+    };
+
+    el.addEventListener('pointerenter', (e) => {
       if (e.pointerType !== 'mouse') return;
-      x = e.clientX;
-      y = e.clientY;
-      if (!visible) {
-        visible = true;
-        root.classList.add('is-visible');
-      }
-      const target = (e.target as HTMLElement).closest<HTMLElement>(
-        'a, button, [data-magnetic], summary, input, textarea',
-      );
-      magnet = target?.hasAttribute('data-magnetic') ? target : null;
-      root.classList.toggle('is-active', Boolean(target));
-    },
-    { passive: true },
-  );
+      anchor();
+    });
 
-  document.addEventListener('pointerdown', () => root.classList.add('is-down'));
-  document.addEventListener('pointerup', () => root.classList.remove('is-down'));
-  document.addEventListener('pointerleave', () => {
-    visible = false;
-    root.classList.remove('is-visible');
-  });
+    el.addEventListener(
+      'pointermove',
+      (e) => {
+        if (e.pointerType !== 'mouse') return;
+        if (!cx && !cy) anchor();
+        tx = Math.max(-RANGE, Math.min(RANGE, (e.clientX - cx) * STRENGTH));
+        ty = Math.max(-RANGE, Math.min(RANGE, (e.clientY - cy) * STRENGTH));
+        queue();
+      },
+      { passive: true },
+    );
 
-  function loop() {
-    requestAnimationFrame(loop);
-    let tx = x;
-    let ty = y;
-    if (magnet) {
-      const r = magnet.getBoundingClientRect();
-      tx = r.left + r.width / 2;
-      ty = r.top + r.height / 2;
-    }
-    rx += (tx - rx) * 0.18;
-    ry += (ty - ry) * 0.18;
-    ring.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`;
-    dot.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
+    const release = () => {
+      tx = 0;
+      ty = 0;
+      cx = 0;
+      cy = 0;
+      queue();
+    };
 
-    if (magnet) {
-      const dx = (x - rx) * 0.22;
-      const dy = (y - ry) * 0.22;
-      magnet.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-    }
+    el.addEventListener('pointerleave', release);
+    el.addEventListener('blur', release);
   }
-  requestAnimationFrame(loop);
-
-  document.addEventListener(
-    'pointerover',
-    (e) => {
-      const el = (e.target as HTMLElement).closest<HTMLElement>('[data-magnetic]');
-      if (!el && magnet) {
-        magnet.style.transform = '';
-      }
-    },
-    { passive: true },
-  );
-
-  document.addEventListener(
-    'pointerout',
-    (e) => {
-      const el = (e.target as HTMLElement).closest<HTMLElement>('[data-magnetic]');
-      if (el) el.style.transform = '';
-    },
-    { passive: true },
-  );
 }
 
 /* ----------------------------------------------------------- constellation */
@@ -264,7 +251,7 @@ function boot() {
   initNav();
   initConstellation();
   initCopy();
-  initCursor();
+  initMagnetic();
 }
 
 function start() {

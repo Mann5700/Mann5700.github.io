@@ -27,31 +27,33 @@ const { ambient = false } = Astro.props;
     overflow: hidden;
     background-color: var(--c-void);
     background-image:
-      /* photon ring */
+      /* hot core */
       radial-gradient(
-        circle at var(--hole-x, 72%) var(--hole-y, 46%),
-        transparent 0 6.9vmin,
-        rgb(255 208 168 / 70%) 7vmin 7.25vmin,
-        transparent 7.4vmin
+        circle at var(--neb-x, 70%) var(--neb-y, 46%),
+        rgb(255 228 190 / 34%) 0,
+        rgb(255 150 90 / 18%) 9vmin,
+        transparent 20vmin
       ),
-      /* accretion halo */
+      /* warm filaments */
         radial-gradient(
-          circle at var(--hole-x, 72%) var(--hole-y, 46%),
-          transparent 0 7.1vmin,
-          rgb(255 150 80 / 30%) 7.6vmin,
-          rgb(255 120 60 / 10%) 13vmin,
-          rgb(120 70 40 / 4%) 24vmin,
-          transparent 42vmin
+          ellipse 34vmin 26vmin at calc(var(--neb-x, 70%) - 6vmin) calc(var(--neb-y, 46%) + 4vmin),
+          rgb(232 92 48 / 44%),
+          transparent 72%
         ),
-      /* event horizon */
+      /* teal oxygen shell */
         radial-gradient(
-          circle at var(--hole-x, 72%) var(--hole-y, 46%),
-          #000 0 6.4vmin,
-          transparent 6.9vmin
+          ellipse 40vmin 30vmin at calc(var(--neb-x, 70%) + 7vmin) calc(var(--neb-y, 46%) - 5vmin),
+          rgb(28 160 195 / 44%),
+          transparent 70%
+        ),
+      /* violet outskirts */
+        radial-gradient(
+          ellipse 52vmin 40vmin at var(--neb-x, 70%) var(--neb-y, 46%),
+          rgb(120 60 165 / 32%),
+          transparent 72%
         ),
       /* cold dust */
-        radial-gradient(60% 50% at 18% 78%, rgb(48 70 110 / 16%), transparent 70%),
-      radial-gradient(45% 40% at 85% 88%, rgb(60 50 90 / 10%), transparent 70%),
+        radial-gradient(60% 50% at 18% 80%, rgb(48 70 110 / 14%), transparent 70%),
       /* starfield tile */
         url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27420%27 height=%27420%27%3E%3Cg fill=%27%23ffffff%27%3E%3Ccircle cx=%2734%27 cy=%2751%27 r=%271%27 opacity=%27.55%27/%3E%3Ccircle cx=%27118%27 cy=%2719%27 r=%27.7%27 opacity=%27.35%27/%3E%3Ccircle cx=%27201%27 cy=%2788%27 r=%271.2%27 opacity=%27.6%27/%3E%3Ccircle cx=%27288%27 cy=%2734%27 r=%27.6%27 opacity=%27.3%27/%3E%3Ccircle cx=%27376%27 cy=%27102%27 r=%271%27 opacity=%27.45%27/%3E%3Ccircle cx=%2762%27 cy=%27158%27 r=%27.8%27 opacity=%27.4%27/%3E%3Ccircle cx=%27154%27 cy=%27211%27 r=%271.1%27 opacity=%27.5%27/%3E%3Ccircle cx=%27243%27 cy=%27172%27 r=%27.6%27 opacity=%27.3%27/%3E%3Ccircle cx=%27330%27 cy=%27236%27 r=%27.9%27 opacity=%27.42%27/%3E%3Ccircle cx=%2716%27 cy=%27268%27 r=%271%27 opacity=%27.5%27/%3E%3Ccircle cx=%27100%27 cy=%27327%27 r=%27.7%27 opacity=%27.32%27/%3E%3Ccircle cx=%27196%27 cy=%27299%27 r=%271.3%27 opacity=%27.58%27/%3E%3Ccircle cx=%27284%27 cy=%27366%27 r=%27.8%27 opacity=%27.38%27/%3E%3Ccircle cx=%27366%27 cy=%27312%27 r=%27.6%27 opacity=%27.28%27/%3E%3Ccircle cx=%27128%27 cy=%27122%27 r=%27.5%27 opacity=%27.25%27/%3E%3Ccircle cx=%27222%27 cy=%2764%27 r=%27.5%27 opacity=%27.22%27/%3E%3C/g%3E%3C/svg%3E');
     background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat;
@@ -79,13 +81,13 @@ const { ambient = false } = Astro.props;
 
   @media (max-aspect-ratio: 1/1) {
     .cosmos {
-      --hole-x: 50%;
-      --hole-y: 18%;
+      --neb-x: 50%;
+      --neb-y: 18%;
     }
   }
 
   .cosmos[data-ambient] {
-    --hole-y: -30%;
+    --neb-y: -30%;
     opacity: 0.6;
   }
 </style>

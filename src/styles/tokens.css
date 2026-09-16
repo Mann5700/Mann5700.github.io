@@ -125,7 +125,6 @@
   --z-content: 1;
   --z-nav: 50;
   --z-menu: 60;
-  --z-cursor: 100;
 
   /* Lets height transition to `auto` where the browser supports it. */
   interpolate-size: allow-keywords;

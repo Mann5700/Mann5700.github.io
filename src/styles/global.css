@@ -390,74 +390,6 @@ html.js [data-reveal].is-revealed {
 }
 
 /* ============================================================================
-   CUSTOM CURSOR
-   Injected by script, desktop pointers only. The native cursor is never hidden,
-   so nothing is lost if this fails to render.
-   ========================================================================= */
-
-.cursor {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-cursor);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity var(--d-base) var(--e-out);
-}
-
-.cursor.is-visible {
-  opacity: 1;
-}
-
-.cursor__ring,
-.cursor__dot {
-  position: absolute;
-  top: 0;
-  left: 0;
-  border-radius: 50%;
-  will-change: transform;
-}
-
-.cursor__ring {
-  width: 28px;
-  height: 28px;
-  border: 1px solid rgb(255 255 255 / 30%);
-  transition:
-    width var(--d-base) var(--e-out),
-    height var(--d-base) var(--e-out),
-    border-color var(--d-base) var(--e-out),
-    background-color var(--d-base) var(--e-out);
-}
-
-.cursor__dot {
-  width: 4px;
-  height: 4px;
-  background: var(--c-ember);
-  transition: opacity var(--d-fast) var(--e-out);
-}
-
-.cursor.is-active .cursor__ring {
-  width: 44px;
-  height: 44px;
-  border-color: var(--c-ember);
-  background: rgb(255 157 92 / 8%);
-}
-
-.cursor.is-active .cursor__dot {
-  opacity: 0;
-}
-
-.cursor.is-down .cursor__ring {
-  width: 22px;
-  height: 22px;
-}
-
-@media (hover: none), (prefers-reduced-motion: reduce) {
-  .cursor {
-    display: none;
-  }
-}
-
-/* ============================================================================
    PRINT
    ========================================================================= */
 
@@ -468,7 +400,6 @@ html.js [data-reveal].is-revealed {
   }
 
   .site-nav,
-  .cursor,
   canvas,
   .hero__scroll {
     display: none !important;

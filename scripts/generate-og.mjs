@@ -84,20 +84,33 @@ function ogSvg(profile) {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
-    <radialGradient id="disk" cx="50%" cy="50%">
-      <stop offset="34%" stop-color="#ff9d5c" stop-opacity="0"/>
-      <stop offset="41%" stop-color="#ffb27a" stop-opacity=".95"/>
-      <stop offset="52%" stop-color="#ff7a3c" stop-opacity=".30"/>
-      <stop offset="78%" stop-color="#d9662a" stop-opacity=".08"/>
-      <stop offset="100%" stop-color="#d9662a" stop-opacity="0"/>
+    <radialGradient id="violet" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#7b3fd4" stop-opacity=".40"/>
+      <stop offset="60%" stop-color="#4a2278" stop-opacity=".20"/>
+      <stop offset="100%" stop-color="#4a2278" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="teal" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#4fd8f5" stop-opacity=".62"/>
+      <stop offset="45%" stop-color="#1580ad" stop-opacity=".38"/>
+      <stop offset="100%" stop-color="#0b3352" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ember" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#ffcf9e" stop-opacity=".85"/>
+      <stop offset="38%" stop-color="#ff7838" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="#8f2f14" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#fff4e2" stop-opacity=".95"/>
+      <stop offset="40%" stop-color="#ffb877" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="#ffb877" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="dust" cx="20%" cy="85%">
-      <stop offset="0%" stop-color="#3a5a8c" stop-opacity=".28"/>
+      <stop offset="0%" stop-color="#3a5a8c" stop-opacity=".22"/>
       <stop offset="100%" stop-color="#3a5a8c" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#05060a" stop-opacity=".96"/>
-      <stop offset="62%" stop-color="#05060a" stop-opacity=".55"/>
+      <stop offset="0%" stop-color="#05060a" stop-opacity=".97"/>
+      <stop offset="58%" stop-color="#05060a" stop-opacity=".62"/>
       <stop offset="100%" stop-color="#05060a" stop-opacity="0"/>
     </linearGradient>
   </defs>
@@ -106,13 +119,16 @@ function ogSvg(profile) {
   <rect width="1200" height="630" fill="url(#dust)"/>
   <g>${stars(150, 987654321)}</g>
 
-  <g transform="translate(925 300)">
-    <ellipse rx="255" ry="74" fill="none" stroke="#ff9d5c" stroke-opacity=".16" stroke-width="2"/>
-    <circle r="230" fill="url(#disk)"/>
-    <circle r="78" fill="#05060a"/>
-    <circle r="86" fill="none" stroke="#ffc48f" stroke-opacity=".9" stroke-width="2.5"/>
+  <g transform="translate(905 300)">
+    <ellipse rx="340" ry="300" fill="url(#violet)"/>
+    <ellipse cx="-40" cy="-30" rx="250" ry="210" fill="url(#teal)"/>
+    <ellipse cx="70" cy="60" rx="190" ry="160" fill="url(#ember)"/>
+    <ellipse cx="-110" cy="90" rx="120" ry="95" fill="url(#ember)" opacity=".55"/>
+    <ellipse cx="120" cy="-110" rx="130" ry="105" fill="url(#teal)" opacity=".6"/>
+    <circle cx="-20" cy="-10" r="90" fill="url(#core)"/>
   </g>
 
+  <g>${stars(60, 24680135)}</g>
   <rect width="820" height="630" fill="url(#fade)"/>
 
   <g transform="translate(84 172)">
