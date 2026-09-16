@@ -21,9 +21,9 @@ const WIDTHS = [480, 720, 1024, 1440, 1920, 2560];
 const srcset = (ext: string) =>
   WIDTHS.map((w) => `${url(`/images/nebula/crab-${w}.${ext}`)} ${w}w`).join(', ');
 
-/* Matches the CSS below: the plate is as wide as it is tall, capped by both
-   the viewport width and its height. */
-const sizes = '(max-aspect-ratio: 1/1) 118vw, min(74vw, 108vh)';
+/* Matches the CSS below: the plate is square and sized to sit wholly inside
+   the viewport, so the remnant is never clipped by an edge. */
+const sizes = '(max-aspect-ratio: 1/1) min(74vw, 32vh), min(55vw, 86vh)';
 ---
 
 <div
@@ -72,9 +72,9 @@ const sizes = '(max-aspect-ratio: 1/1) 118vw, min(74vw, 108vh)';
   .cosmos__plate {
     position: absolute;
     top: 50%;
-    right: -12%;
+    right: 1vw;
     display: block;
-    width: min(74vw, 108vh);
+    width: min(55vw, 86vh);
     aspect-ratio: 1;
     translate: 0 -50%;
     transform: translate3d(var(--px, 0px), calc(var(--py, 0px) + var(--drift, 0px)), 0);
@@ -82,19 +82,15 @@ const sizes = '(max-aspect-ratio: 1/1) 118vw, min(74vw, 108vh)';
     /* The plate's own background is black, so screen-blending dissolves it
        into the page and leaves only the gas and its stars. */
     mix-blend-mode: screen;
-    /* Feathers the square crop into deep space. */
+    /* Fades only the square's corners. The inscribed circle stays opaque, so
+       no part of the remnant itself is masked away. */
     -webkit-mask-image: radial-gradient(
-      circle at 50% 50%,
-      #000 38%,
-      rgb(0 0 0 / 55%) 56%,
-      transparent 73%
+      circle,
+      #000 0 71%,
+      rgb(0 0 0 / 50%) 85%,
+      transparent 99%
     );
-    mask-image: radial-gradient(
-      circle at 50% 50%,
-      #000 38%,
-      rgb(0 0 0 / 55%) 56%,
-      transparent 73%
-    );
+    mask-image: radial-gradient(circle, #000 0 71%, rgb(0 0 0 / 50%) 85%, transparent 99%);
     will-change: transform;
   }
 
@@ -121,9 +117,9 @@ const sizes = '(max-aspect-ratio: 1/1) 118vw, min(74vw, 108vh)';
     background:
       linear-gradient(
         90deg,
-        rgb(5 6 10 / 82%) 0%,
-        rgb(5 6 10 / 48%) 36%,
-        rgb(5 6 10 / 0%) 64%
+        rgb(5 6 10 / 84%) 0%,
+        rgb(5 6 10 / 56%) 40%,
+        rgb(5 6 10 / 0%) 70%
       ),
       radial-gradient(130% 95% at 50% 50%, transparent 38%, rgb(5 6 10 / 62%) 100%);
   }
@@ -142,10 +138,12 @@ const sizes = '(max-aspect-ratio: 1/1) 118vw, min(74vw, 108vh)';
 
   @media (max-aspect-ratio: 1/1) {
     .cosmos__plate {
-      top: -6%;
+      top: 4rem;
       right: auto;
       left: 50%;
-      width: 130vw;
+      /* Height-bound as well as width-bound, so the plate still clears the
+         hero's reserved band on a portrait tablet. */
+      width: min(74vw, 32svh);
       translate: -50% 0;
     }
 
