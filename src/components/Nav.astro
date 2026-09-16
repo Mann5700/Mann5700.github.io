@@ -44,7 +44,13 @@ const initials = profile.name
     }
 
     <div class="site-nav__actions">
-      <a class="btn btn--ghost site-nav__resume" href={url(profile.resume.href)} download>
+      <a
+        class="btn btn--ghost site-nav__resume"
+        href={url(profile.resume.href)}
+        target="_blank"
+        rel="noopener"
+        data-resume-open
+      >
         {profile.resume.label}
       </a>
 
@@ -80,7 +86,13 @@ const initials = profile.name
       </ul>
     </nav>
     <div class="nav-panel__foot">
-      <a class="btn btn--primary" href={url(profile.resume.href)} download>
+      <a
+        class="btn btn--primary"
+        href={url(profile.resume.href)}
+        target="_blank"
+        rel="noopener"
+        data-resume-open
+      >
         {profile.resume.label}
       </a>
       <ul class="nav-panel__social" role="list">

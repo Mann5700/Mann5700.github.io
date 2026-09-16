@@ -209,6 +209,8 @@ disappears again if you remove them all.
    contact line, keeps the original fonts and the email/GitHub/LinkedIn links,
    and writes the result to `public/resume/Mann-Patel-Resume.pdf`.
    The script exits non-zero if a phone number survives, so it cannot fail quietly.
+   It then rasterises that **redacted** file into the page images the in-page
+   viewer displays, so the preview can never show something the PDF does not.
 3. If the filename changed, update `resume.href` in
    `src/content/profile/profile.md`.
 4. Update `resume.updated` so the Signal section shows the right date.

@@ -225,6 +225,57 @@ function initConstellation() {
   }
 }
 
+/* ----------------------------------------------------------- resume viewer */
+
+/**
+ * Upgrades every "Resume" link into the in-page viewer. Each trigger keeps a
+ * real href to the PDF, so without this — or without <dialog> support — the
+ * links still open the file in a new tab.
+ */
+function initResumeViewer() {
+  const dialog = document.querySelector<HTMLDialogElement>('[data-resume-viewer]');
+  if (!dialog || typeof dialog.showModal !== 'function') return;
+
+  const triggers = document.querySelectorAll<HTMLAnchorElement>('[data-resume-open]');
+  if (!triggers.length) return;
+
+  let opener: HTMLElement | null = null;
+
+  const open = (event: MouseEvent) => {
+    // Leave modified clicks alone so "open in new tab" still works.
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+    event.preventDefault();
+    opener = event.currentTarget as HTMLElement;
+    document.body.dataset.menuOpen = 'false';
+    document.querySelector('[data-nav-panel]')?.removeAttribute('data-open');
+    document.querySelector('[data-nav-toggle]')?.setAttribute('aria-expanded', 'false');
+    dialog.showModal();
+  };
+
+  for (const trigger of triggers) trigger.addEventListener('click', open);
+
+  dialog.querySelector('[data-resume-close]')?.addEventListener('click', () => dialog.close());
+
+  // The dialog element fills the viewport, so a click that lands on it rather
+  // than on the panel came from the backdrop.
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+
+  // Not all engines dispatch `cancel` reliably, so Escape is handled directly
+  // rather than left to the platform.
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && dialog.open) {
+      event.preventDefault();
+      dialog.close();
+    }
+  });
+
+  dialog.addEventListener('close', () => opener?.focus({ preventScroll: true }));
+}
+
 /* -------------------------------------------------------------- copy email */
 
 function initCopy() {
@@ -251,6 +302,7 @@ function boot() {
   initNav();
   initConstellation();
   initCopy();
+  initResumeViewer();
   initMagnetic();
 }
 

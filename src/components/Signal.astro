@@ -14,12 +14,14 @@ const channels = [
     value: social.handle ?? social.href.replace(/^https?:\/\//, ''),
     href: social.href,
     external: true,
+    resume: false,
   })),
   {
     label: profile.resume.label,
     value: profile.resume.updated ? `Updated ${profile.resume.updated.replace('-', '.')}` : 'PDF',
     href: url(profile.resume.href),
     external: false,
+    resume: true,
   },
 ];
 ---
@@ -75,9 +77,9 @@ const channels = [
               <a
                 class="channel"
                 href={channel.href}
-                rel={channel.external ? 'noopener noreferrer me' : undefined}
-                target={channel.external ? '_blank' : undefined}
-                download={channel.external ? undefined : true}
+                rel={channel.external ? 'noopener noreferrer me' : 'noopener'}
+                target="_blank"
+                data-resume-open={channel.resume ? '' : undefined}
               >
                 <span class="channel__label mono">{channel.label}</span>
                 <span class="channel__value">{channel.value}</span>

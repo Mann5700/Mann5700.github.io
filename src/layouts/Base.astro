@@ -8,6 +8,7 @@ import '../styles/global.css';
 import { getEntry } from 'astro:content';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import ResumeViewer from '../components/ResumeViewer.astro';
 import { absolute, url } from '../lib/site';
 
 interface Props {
@@ -100,6 +101,8 @@ const ogImageAlt = imageAlt ?? `${profile.name} — ${profile.role}`;
     </main>
 
     <Footer />
+
+    <ResumeViewer />
 
     <script>
       import '../scripts/ui';

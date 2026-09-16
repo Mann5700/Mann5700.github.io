@@ -1,0 +1,289 @@
+---
+/**
+ * In-page resume viewer. A native <dialog>, so focus trapping, Escape and
+ * inert background come from the platform rather than from script.
+ *
+ * Pages are rasterised from the redacted PDF at build time, which keeps the
+ * view identical on every device — embedded PDF viewers are unreliable on
+ * mobile — and guarantees the preview matches the file being served.
+ */
+import { readdirSync } from 'node:fs';
+import path from 'node:path';
+import { getEntry } from 'astro:content';
+import { url } from '../lib/site';
+
+const profile = (await getEntry('profile', 'profile'))!.data;
+
+const dir = path.join(process.cwd(), 'public', 'resume');
+const pages = readdirSync(dir)
+  .map((file) => file.match(/^preview-(\d+)-900\.webp$/)?.[1])
+  .filter((n): n is string => Boolean(n))
+  .map(Number)
+  .sort((a, b) => a - b);
+
+const updated = profile.resume.updated?.replace('-', '.');
+---
+
+<dialog class="viewer" data-resume-viewer aria-labelledby="viewer-title">
+  <div class="viewer__panel">
+    <header class="viewer__bar">
+      <div class="viewer__id">
+        <span class="label">Document</span>
+        <h2 class="viewer__title" id="viewer-title">{profile.name} — {profile.resume.label}</h2>
+      </div>
+
+      <div class="viewer__meta mono">
+        <span class="viewer__role">{profile.role}</span>
+        {updated && <span>Updated {updated}</span>}
+        <span>{pages.length} {pages.length === 1 ? 'page' : 'pages'}</span>
+        <span>PDF</span>
+      </div>
+
+      <div class="viewer__actions">
+        <a class="btn btn--primary viewer__download" href={url(profile.resume.href)} download>
+          <svg class="btn__icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="M8 2v9m0 0 3.2-3.2M8 11 4.8 7.8M2.5 13.5h11"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+          Download
+        </a>
+        <button class="viewer__close" type="button" data-resume-close aria-label="Close resume">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="m4 4 8 8M12 4l-8 8"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="viewer__body">
+      {
+        pages.map((n) => (
+          <figure class="sheet">
+            <picture>
+              <source
+                type="image/avif"
+                srcset={`${url(`/resume/preview-${n}-900.avif`)} 900w, ${url(`/resume/preview-${n}-1600.avif`)} 1600w`}
+                sizes="(min-width: 60rem) 52rem, 92vw"
+              />
+              <source
+                type="image/webp"
+                srcset={`${url(`/resume/preview-${n}-900.webp`)} 900w, ${url(`/resume/preview-${n}-1600.webp`)} 1600w`}
+                sizes="(min-width: 60rem) 52rem, 92vw"
+              />
+              <img
+                src={url(`/resume/preview-${n}-900.webp`)}
+                alt={`Resume, page ${n} of ${pages.length}`}
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
+          </figure>
+        ))
+      }
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .viewer {
+    width: min(64rem, 94vw);
+    max-width: none;
+    max-height: 92svh;
+    /* The global `* { margin: 0 }` reset clears the UA's `margin: auto`, which
+       is what centres a modal dialog. */
+    margin: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--c-text);
+    overflow: visible;
+  }
+
+  .viewer::backdrop {
+    background: rgb(4 5 9 / 78%);
+    backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+  }
+
+  .viewer__panel {
+    display: flex;
+    flex-direction: column;
+    max-height: 92svh;
+    border: 1px solid var(--c-line-strong);
+    border-radius: var(--r-l);
+    background: linear-gradient(180deg, rgb(20 26 38 / 96%), rgb(11 15 24 / 96%));
+    box-shadow: var(--sh-l), var(--sh-inset);
+    overflow: hidden;
+  }
+
+  /* ------------------------------------------------------------------- bar */
+
+  .viewer__bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--sp-s) var(--sp-m);
+    padding: var(--sp-s) var(--sp-m);
+    border-block-end: 1px solid var(--c-line);
+    background: rgb(255 255 255 / 2%);
+  }
+
+  .viewer__id {
+    min-width: 0;
+  }
+
+  .viewer__title {
+    margin-block-start: 0.15rem;
+    font-size: var(--step-0);
+    font-weight: 400;
+    letter-spacing: var(--ls-heading);
+    color: var(--c-text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .viewer__meta {
+    display: none;
+    gap: var(--sp-m);
+    grid-column: 1;
+    font-size: var(--step--2);
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--c-dim);
+  }
+
+  .viewer__role {
+    color: var(--c-ember);
+  }
+
+  .viewer__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2xs);
+    grid-column: 2;
+    grid-row: 1 / -1;
+  }
+
+  .viewer__download {
+    min-height: 2.5rem;
+    padding: 0.5rem 1.1rem;
+  }
+
+  .viewer__close {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--c-muted);
+    cursor: pointer;
+    transition:
+      color var(--d-fast) var(--e-out),
+      border-color var(--d-fast) var(--e-out),
+      transform var(--d-fast) var(--e-out);
+  }
+
+  .viewer__close svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .viewer__close:hover {
+    color: var(--c-text);
+    border-color: var(--c-ember);
+    transform: rotate(90deg);
+  }
+
+  /* ------------------------------------------------------------------ body */
+
+  .viewer__body {
+    display: grid;
+    gap: var(--sp-m);
+    padding: var(--sp-m);
+    overflow: auto;
+    overscroll-behavior: contain;
+    background:
+      radial-gradient(90% 60% at 50% 0%, rgb(255 157 92 / 5%), transparent 70%),
+      var(--c-void);
+  }
+
+  .sheet {
+    margin: 0;
+    /* Below this width a Letter page is unreadable, so the body scrolls
+       instead of shrinking the document into illegibility. */
+    min-width: 42rem;
+    border-radius: var(--r-s);
+    overflow: hidden;
+    box-shadow: 0 18px 48px -20px rgb(0 0 0 / 80%);
+  }
+
+  .sheet img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* ------------------------------------------------------------- animation */
+
+  .viewer[open] {
+    animation: viewer-in 320ms var(--e-out);
+  }
+
+  .viewer[open]::backdrop {
+    animation: viewer-fade 320ms var(--e-out);
+  }
+
+  @keyframes viewer-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.985);
+    }
+  }
+
+  @keyframes viewer-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* ----------------------------------------------------------- breakpoints */
+
+  @media (min-width: 40rem) {
+    .viewer__meta {
+      display: flex;
+    }
+
+    .viewer__bar {
+      padding: var(--sp-s) var(--sp-m) 0.85rem;
+    }
+  }
+
+  @media (min-width: 52rem) {
+    .sheet {
+      min-width: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .viewer[open],
+    .viewer[open]::backdrop {
+      animation: none;
+    }
+
+    .viewer__close:hover {
+      transform: none;
+    }
+  }
+</style>

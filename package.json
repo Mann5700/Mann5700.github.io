@@ -15,7 +15,7 @@
     "validate": "node scripts/validate-content.mjs",
     "og": "node scripts/generate-og.mjs",
     "backdrop": "node scripts/build-backdrop.mjs",
-    "resume": "python scripts/redact-resume.py",
+    "resume": "python scripts/redact-resume.py && node scripts/build-resume-preview.mjs",
     "verify": "npm run validate && npm run check && npm run build",
     "astro": "astro"
   },

@@ -85,6 +85,20 @@ def link_for(text: str, links: list[dict]) -> str | None:
     return None
 
 
+def render_previews(pdf: Path) -> None:
+    """Rasterises the *redacted* PDF so the on-site viewer can never show the
+    phone number even if the wrong file is previewed."""
+    out = ROOT / "assets-src" / "resume-preview"
+    out.mkdir(parents=True, exist_ok=True)
+    for old in out.glob("page-*.png"):
+        old.unlink()
+
+    doc = fitz.open(pdf)
+    for index, page in enumerate(doc, start=1):
+        page.get_pixmap(dpi=200).save(out / f"page-{index}.png")
+    print(f"Rendered {doc.page_count} preview page(s) to assets-src/resume-preview/")
+
+
 def redact(src: Path, dst: Path) -> None:
     doc = fitz.open(src)
     page = doc[0]
@@ -93,6 +107,7 @@ def redact(src: Path, dst: Path) -> None:
     if line is None:
         print(f"No phone number found in {src.name} — copying as is.")
         doc.save(dst, garbage=4, deflate=True)
+        render_previews(dst)
         return
 
     spans = line["spans"]
@@ -153,6 +168,8 @@ def redact(src: Path, dst: Path) -> None:
     if remaining:
         sys.exit(f"FAILED: a phone number is still present: {remaining.group(0)}")
     print(f"Wrote {dst.relative_to(ROOT)} — no phone number present.")
+
+    render_previews(dst)
 
 
 if __name__ == "__main__":
