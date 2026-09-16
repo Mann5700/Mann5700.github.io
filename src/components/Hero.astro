@@ -28,8 +28,11 @@ const actions = [
 
     <h1 class="hero__name" id="hero-name">
       {
-        profile.name.split(' ').map((word, i) => (
-          <span class="hero__word" style={`--i:${i}`}>
+        profile.name.split(' ').map((word, i, all) => (
+          <span
+            class:list={['hero__word', i === all.length - 1 && 'hero__word--lit']}
+            style={`--i:${i}`}
+          >
             {word}
           </span>
         ))
@@ -232,6 +235,9 @@ const actions = [
     line-height: var(--lh-tight);
     letter-spacing: var(--ls-mega);
     color: var(--c-text-strong);
+    /* Light in vacuum: a cold bloom, plus a tight dark halo that holds contrast
+       wherever the plate is bright behind the type. */
+    text-shadow: 0 0 90px rgb(159 217 255 / 18%), 0 0 26px rgb(5 6 10 / 55%);
   }
 
   .hero__word {
@@ -239,12 +245,95 @@ const actions = [
     animation-delay: calc(0.12s + var(--i) * 0.09s);
   }
 
-  .hero__word:last-child {
-    /* A faint lift on the surname, like light grazing an edge. */
-    background: linear-gradient(100deg, var(--c-text-strong) 30%, #c8cede 75%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  /* The surname is filled with the remnant's own palette instead of a flat
+     colour. The fill drifts like gas and a specular band crosses it slowly.
+     Both layers move in one animation because they share background-position. */
+  @supports ((background-clip: text) or (-webkit-background-clip: text)) {
+    /* Scoped through .hero__name to outrank the shared `rise` rule, which would
+       otherwise drop the second animation from the shorthand. */
+    .hero__name .hero__word--lit {
+      background-image:
+        linear-gradient(100deg, transparent 41%, rgb(255 255 255 / 72%) 50%, transparent 59%),
+        linear-gradient(
+          92deg,
+          #9fd9ff 0%,
+          #eaf7ff 13%,
+          #ffdcae 36%,
+          #ff9d5c 55%,
+          #c79bf5 77%,
+          #9fd9ff 100%
+        );
+      background-size: 260% 100%, 200% 100%;
+      background-repeat: no-repeat;
+      background-position: -130% 0, 0 0;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      animation:
+        rise 1.1s var(--e-out) both,
+        nebula-text 16s linear infinite;
+      animation-delay: calc(0.12s + var(--i) * 0.09s), 0s;
+    }
+  }
+
+  @keyframes nebula-text {
+    0% {
+      background-position: -130% 0, 0% 0;
+    }
+    35% {
+      background-position: 230% 0, 70% 0;
+    }
+    100% {
+      background-position: 230% 0, 200% 0;
+    }
+  }
+
+  /* Parallax depth. `--ptr-x/y` are published by the backdrop script and default
+     to 0, so this is inert without a mouse or without JavaScript. Foreground
+     layers move against the plate, which is what sells the separation. */
+  .hero__eyebrow,
+  .hero__name,
+  .hero__role,
+  .hero__headline,
+  .hero__actions {
+    translate: calc(var(--ptr-x, 0) * var(--depth, 0px) * -1)
+      calc(var(--ptr-y, 0) * var(--depth, 0px) * -1);
+  }
+
+  .hero__eyebrow {
+    --depth: 5px;
+  }
+  .hero__name {
+    --depth: 15px;
+  }
+  .hero__role {
+    --depth: 10px;
+  }
+  .hero__headline {
+    --depth: 7px;
+  }
+  .hero__actions {
+    --depth: 4px;
+  }
+
+  /* The hero recedes as it leaves frame, where the browser can drive an
+     animation from scroll position. Elsewhere this simply never applies. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .hero__inner {
+        animation: hero-depart linear both;
+        animation-timeline: view();
+        animation-range: exit 5% exit 95%;
+      }
+
+      @keyframes hero-depart {
+        to {
+          opacity: 0.18;
+          translate: 0 -4vh;
+        }
+      }
+    }
   }
 
   /* ------------------------------------------------------------------ role */
@@ -456,6 +545,15 @@ const actions = [
     .hero__pulse::after,
     .hero__scroll-track span {
       animation: none;
+    }
+
+    /* The nebula fill stays; only its drift stops. */
+    .hero__eyebrow,
+    .hero__name,
+    .hero__role,
+    .hero__headline,
+    .hero__actions {
+      translate: none;
     }
   }
 </style>

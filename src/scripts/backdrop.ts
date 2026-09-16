@@ -27,19 +27,24 @@ export function mountBackdrop(host: HTMLElement): () => void {
     py += (ty - py) * 0.06;
 
     const progress = Math.min(window.scrollY / Math.max(window.innerHeight, 1), 1.4);
-    host.style.setProperty('--px', `${px.toFixed(2)}px`);
-    host.style.setProperty('--py', `${py.toFixed(2)}px`);
+    host.style.setProperty('--px', `${(px * 30).toFixed(2)}px`);
+    host.style.setProperty('--py', `${(py * 20).toFixed(2)}px`);
     host.style.setProperty('--drift', `${(progress * -14).toFixed(2)}vh`);
     host.style.setProperty('--dim', (1 - Math.min(progress, 1) * 0.76).toFixed(3));
 
-    if (Math.abs(tx - px) > 0.05 || Math.abs(ty - py) > 0.05) queue();
+    // Published unitless so foreground layers can pick their own depth.
+    const root = document.documentElement;
+    root.style.setProperty('--ptr-x', px.toFixed(4));
+    root.style.setProperty('--ptr-y', py.toFixed(4));
+
+    if (Math.abs(tx - px) > 0.002 || Math.abs(ty - py) > 0.002) queue();
   }
 
   const onScroll = () => queue();
   const onPointer = (e: PointerEvent) => {
     if (e.pointerType !== 'mouse') return;
-    tx = (0.5 - e.clientX / window.innerWidth) * 30;
-    ty = (0.5 - e.clientY / window.innerHeight) * 20;
+    tx = 0.5 - e.clientX / window.innerWidth;
+    ty = 0.5 - e.clientY / window.innerHeight;
     queue();
   };
 
