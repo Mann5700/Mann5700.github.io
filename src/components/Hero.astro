@@ -137,10 +137,9 @@ const actions = [
     justify-content: flex-end;
   }
 
-  /* Every hero element rises in on load with a shared cadence. This is a pure
-     CSS animation so it runs even when the bundle fails to load. */
+  /* Every hero element rises in on load with a shared cadence. The name is
+     deliberately absent: it arrives by typing instead. */
   .hero__eyebrow,
-  .hero__name,
   .hero__role,
   .hero__headline,
   .hero__actions,
@@ -259,7 +258,7 @@ const actions = [
 
   @media (prefers-reduced-motion: no-preference) {
     .hero__type {
-      animation: type-in 1.5s var(--type-steps, steps(10, end)) 0.4s both;
+      animation: type-in 1.5s var(--type-steps, steps(10, end)) 0.28s both;
     }
 
     .hero__type::after {
