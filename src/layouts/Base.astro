@@ -1,7 +1,9 @@
 ---
 import '@fontsource-variable/inter/wght.css';
+import '@fontsource-variable/sora/wght.css';
 import '@fontsource-variable/jetbrains-mono/wght.css';
 import interFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import soraFont from '@fontsource-variable/sora/files/sora-latin-wght-normal.woff2?url';
 import monoFont from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url';
 import '../styles/global.css';
 
@@ -72,6 +74,7 @@ const ogImageAlt = imageAlt ?? `${profile.name} — ${profile.role}`;
     <link rel="manifest" href={url('/site.webmanifest')} />
 
     <link rel="preload" as="font" type="font/woff2" href={interFont} crossorigin="anonymous" />
+    <link rel="preload" as="font" type="font/woff2" href={soraFont} crossorigin="anonymous" />
     <link rel="preload" as="font" type="font/woff2" href={monoFont} crossorigin="anonymous" />
 
     <link rel="sitemap" href={url('/sitemap-index.xml')} />

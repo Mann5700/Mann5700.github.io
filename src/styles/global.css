@@ -73,6 +73,7 @@ h1,
 h2,
 h3,
 h4 {
+  font-family: var(--f-display);
   font-weight: 300;
   line-height: var(--lh-snug);
   letter-spacing: var(--ls-heading);

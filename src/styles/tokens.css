@@ -46,7 +46,9 @@
     system-ui, sans-serif;
   --f-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SF Mono',
     'Cascadia Mono', 'Roboto Mono', Menlo, monospace;
-  --f-display: var(--f-sans);
+  /* Display face. Wider and rounder than Inter, which reads better at the sizes
+     headings actually run at. Body copy stays on Inter for readability. */
+  --f-display: 'Sora Variable', 'Sora', var(--f-sans);
 
   /* Fluid scale, locked between a 360px and a 1600px viewport. */
   --step--2: clamp(0.694rem, 0.68rem + 0.07vw, 0.75rem);
