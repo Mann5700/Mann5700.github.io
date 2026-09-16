@@ -84,52 +84,19 @@ function ogSvg(profile) {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
-    <radialGradient id="violet" cx="50%" cy="50%">
-      <stop offset="0%" stop-color="#7b3fd4" stop-opacity=".40"/>
-      <stop offset="60%" stop-color="#4a2278" stop-opacity=".20"/>
-      <stop offset="100%" stop-color="#4a2278" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="teal" cx="50%" cy="50%">
-      <stop offset="0%" stop-color="#4fd8f5" stop-opacity=".62"/>
-      <stop offset="45%" stop-color="#1580ad" stop-opacity=".38"/>
-      <stop offset="100%" stop-color="#0b3352" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="ember" cx="50%" cy="50%">
-      <stop offset="0%" stop-color="#ffcf9e" stop-opacity=".85"/>
-      <stop offset="38%" stop-color="#ff7838" stop-opacity=".55"/>
-      <stop offset="100%" stop-color="#8f2f14" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="core" cx="50%" cy="50%">
-      <stop offset="0%" stop-color="#fff4e2" stop-opacity=".95"/>
-      <stop offset="40%" stop-color="#ffb877" stop-opacity=".35"/>
-      <stop offset="100%" stop-color="#ffb877" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="dust" cx="20%" cy="85%">
-      <stop offset="0%" stop-color="#3a5a8c" stop-opacity=".22"/>
-      <stop offset="100%" stop-color="#3a5a8c" stop-opacity="0"/>
-    </radialGradient>
     <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#05060a" stop-opacity=".97"/>
-      <stop offset="58%" stop-color="#05060a" stop-opacity=".62"/>
+      <stop offset="0%" stop-color="#05060a" stop-opacity=".95"/>
+      <stop offset="52%" stop-color="#05060a" stop-opacity=".55"/>
       <stop offset="100%" stop-color="#05060a" stop-opacity="0"/>
     </linearGradient>
+    <radialGradient id="vig" cx="50%" cy="50%">
+      <stop offset="45%" stop-color="#05060a" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#05060a" stop-opacity=".55"/>
+    </radialGradient>
   </defs>
 
-  <rect width="1200" height="630" fill="#05060a"/>
-  <rect width="1200" height="630" fill="url(#dust)"/>
-  <g>${stars(150, 987654321)}</g>
-
-  <g transform="translate(905 300)">
-    <ellipse rx="340" ry="300" fill="url(#violet)"/>
-    <ellipse cx="-40" cy="-30" rx="250" ry="210" fill="url(#teal)"/>
-    <ellipse cx="70" cy="60" rx="190" ry="160" fill="url(#ember)"/>
-    <ellipse cx="-110" cy="90" rx="120" ry="95" fill="url(#ember)" opacity=".55"/>
-    <ellipse cx="120" cy="-110" rx="130" ry="105" fill="url(#teal)" opacity=".6"/>
-    <circle cx="-20" cy="-10" r="90" fill="url(#core)"/>
-  </g>
-
-  <g>${stars(60, 24680135)}</g>
-  <rect width="820" height="630" fill="url(#fade)"/>
+  <rect width="1200" height="630" fill="url(#vig)"/>
+  <rect width="840" height="630" fill="url(#fade)"/>
 
   <g transform="translate(84 172)">
     <text font-family="${mono}" font-size="20" letter-spacing="6" fill="#8b93a6">MANN5700</text>
@@ -146,30 +113,107 @@ function ogSvg(profile) {
 </svg>`;
 }
 
+/** The star field that sits behind the plate. */
+function starsSvg() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#05060a"/>
+  <g>${stars(170, 987654321)}</g>
+</svg>`;
+}
+
+/** Feathers the square plate into deep space, matching the site's CSS mask. */
+function plateMaskSvg(size) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
+  <defs>
+    <radialGradient id="m" cx="50%" cy="50%">
+      <stop offset="38%" stop-color="#fff" stop-opacity="1"/>
+      <stop offset="58%" stop-color="#fff" stop-opacity=".55"/>
+      <stop offset="74%" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="${size}" height="${size}" fill="url(#m)"/>
+</svg>`;
+}
+
+/** Prefers the full-resolution source plate, falls back to a built derivative. */
+async function platePath() {
+  const candidates = [
+    path.join(root, 'assets-src', 'crab-nebula.jpg'),
+    path.join(root, 'public', 'images', 'nebula', 'crab-2560.webp'),
+    path.join(root, 'public', 'images', 'nebula', 'crab-1440.webp'),
+  ];
+  for (const file of candidates) {
+    try {
+      await readFile(file);
+      return file;
+    } catch {
+      /* try the next one */
+    }
+  }
+  throw new Error('No nebula plate found. Run `npm run backdrop` first.');
+}
+
+/** The plate, resized and feathered exactly like the site's CSS mask. */
+async function maskedPlate(size) {
+  const source = await platePath();
+  return sharp(source)
+    .resize(size, size, { fit: 'cover', kernel: 'lanczos3' })
+    .modulate({ saturation: 1.12 })
+    .linear(1.06, -6)
+    .ensureAlpha()
+    .composite([{ input: Buffer.from(plateMaskSvg(size)), blend: 'dest-in' }])
+    .png()
+    .toBuffer();
+}
+
 async function main() {
   const profile = await readProfile();
 
   await mkdir(path.join(root, 'public', 'og'), { recursive: true });
   await mkdir(path.join(root, 'public', 'icons'), { recursive: true });
 
-  const svg = ogSvg(profile);
-  await writeFile(path.join(root, 'public', 'og', 'og.svg'), svg, 'utf8');
-  await sharp(Buffer.from(svg)).png({ quality: 90 }).toFile(path.join(root, 'public', 'og', 'og.png'));
+  const PLATE = 780;
+  const LEFT = 520;
+  // sharp refuses overhanging layers, so the plate is cropped to the part of
+  // the card it actually covers before compositing.
+  const cropY = Math.round((PLATE - 630) / 2);
+  const visible = await sharp(await maskedPlate(PLATE))
+    .extract({ left: 0, top: cropY, width: Math.min(PLATE, 1200 - LEFT), height: 630 })
+    .png()
+    .toBuffer();
 
-  const favicon = await readFile(path.join(root, 'public', 'favicon.svg'));
+  await sharp(Buffer.from(starsSvg()))
+    .composite([
+      { input: visible, left: LEFT, top: 0, blend: 'screen' },
+      { input: Buffer.from(ogSvg(profile)), left: 0, top: 0 },
+    ])
+    .png()
+    .toFile(path.join(root, 'public', 'og', 'og.png'));
+
+  // App icons crop the brightest part of the plate rather than redrawing it.
   const icons = [
     ['icons/apple-touch-icon.png', 180],
     ['icons/icon-192.png', 192],
     ['icons/icon-512.png', 512],
   ];
   for (const [file, size] of icons) {
-    await sharp(favicon, { density: 384 })
-      .resize(size, size)
+    const inner = Math.round(size * 0.94);
+    await sharp({
+      create: { width: size, height: size, channels: 4, background: '#05060a' },
+    })
+      .composite([
+        {
+          input: await maskedPlate(inner),
+          left: Math.round((size - inner) / 2),
+          top: Math.round((size - inner) / 2),
+          blend: 'screen',
+        },
+      ])
       .png()
       .toFile(path.join(root, 'public', file));
   }
 
-  console.log(`Generated public/og/og.png and ${icons.length} icons.`);
+  console.log(`Generated public/og/og.png and ${icons.length} icons from the Hubble plate.`);
 }
 
 main().catch((error) => {

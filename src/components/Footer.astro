@@ -30,7 +30,13 @@ const year = new Date().getUTCFullYear();
     </nav>
 
     <p class="site-foot__colophon mono">
-      © {year} · Built with Astro · No trackers, no cookies
+      <span>© {year} · Built with Astro · No trackers, no cookies</span>
+      <span class="site-foot__credit">
+        Backdrop: Crab Nebula ·
+        <a href="https://esahubble.org/images/heic0515a/" rel="noopener noreferrer" target="_blank">
+          NASA, ESA, J. Hester &amp; A. Loll (ASU)
+        </a>
+      </span>
     </p>
   </div>
 </footer>
@@ -90,9 +96,20 @@ const year = new Date().getUTCFullYear();
   }
 
   .site-foot__colophon {
+    display: grid;
+    gap: 0.3rem;
     font-size: var(--step--2);
     letter-spacing: 0.04em;
     color: var(--c-dim);
+  }
+
+  .site-foot__credit a {
+    color: var(--c-faint);
+    transition: color var(--d-fast) var(--e-out);
+  }
+
+  .site-foot__credit a:hover {
+    color: var(--c-muted);
   }
 
   @media (min-width: 52rem) {
@@ -106,6 +123,7 @@ const year = new Date().getUTCFullYear();
     }
 
     .site-foot__colophon {
+      justify-items: end;
       text-align: end;
     }
   }

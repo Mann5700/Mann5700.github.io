@@ -30,7 +30,7 @@ The site is one long page (`/`) plus one detail page per project
 | **TypeScript** | Strict mode. Content types are generated from the schemas, so a typo in a field name is a build error. |
 | **Content Collections + Zod** | Content is validated against a schema. A missing field fails the build with a message that names the file and the field. |
 | **Plain CSS + design tokens** | Every colour, size, spacing step and easing curve is a custom property in `src/styles/tokens.css`. No utility framework to upgrade, no build-time class generation. |
-| **Raw WebGL (no Three.js)** | The hero's gravitational lens is one hand-written fragment shader, about 6 KB of source. Three.js would have added ~600 KB for the same effect. |
+| **A real Hubble plate, not a shader** | The backdrop is the Crab Nebula photographed by Hubble, served as responsive AVIF/WebP. It looks better than anything procedural and costs no GPU time — parallax and scroll drift are CSS custom properties written by ~60 lines of script. |
 | **CSS animation + IntersectionObserver** | Scroll reveals and transitions need roughly 40 lines of code. GSAP and Framer Motion were not worth their weight here. |
 | **`@fontsource-variable`** | Fonts are installed from npm and self-hosted. No request to a font CDN, so nothing breaks if one goes down. |
 | **GitHub Pages** | Free, static, Git-based, automatic HTTPS, automatic deploy on push, instant rollback by reverting a commit. |
@@ -68,7 +68,7 @@ silently fail, no analytics.
 │   ├── layouts/Base.astro         # <head>, nav, footer, SEO, structured data
 │   ├── lib/site.ts                # small shared helpers
 │   ├── pages/                     # routes
-│   ├── scripts/                   # browser-side enhancement (cosmos, ui)
+│   ├── scripts/                   # browser-side enhancement (backdrop, ui)
 │   └── styles/                    # tokens.css + global.css
 └── astro.config.mjs
 ```
@@ -233,6 +233,27 @@ section, the footer and the `sameAs` structured data all read from that one list
 `src/styles/tokens.css` holds every colour, type step, spacing step, radius,
 shadow and easing curve. Changing `--c-ember` re-tints the entire site.
 
+### 5.10 Change the backdrop
+
+The backdrop is the Crab Nebula as photographed by Hubble — **NASA, ESA,
+J. Hester and A. Loll (Arizona State University)**, credited in the footer.
+NASA imagery is public domain and ESA/Hubble releases are CC BY 4.0, so it is
+free to use; keep the credit if you keep the image.
+
+To swap in a different plate:
+
+1. Put the full-resolution file at `assets-src/crab-nebula.jpg`. That folder is
+   gitignored, so the 14 MB original never enters the repo.
+2. Run `npm run backdrop`. It writes AVIF and WebP at six widths
+   (480 → 2560) into `public/images/nebula/`, which **is** committed.
+3. Run `npm run og` to rebuild the social card and app icons from the same plate.
+4. Update the credit in `src/components/Footer.astro`.
+
+A square, black-background astrophoto works best: the plate is screen-blended
+and radially masked, so its black surroundings dissolve into the page and the
+subject reads as an object in space rather than wallpaper. Position and
+framing live in `src/components/Cosmos.astro`.
+
 ---
 
 ## 6. Deployment
@@ -270,9 +291,9 @@ The site is built so that failures are invisible rather than fatal.
 | If this fails | What happens |
 | --- | --- |
 | JavaScript | Everything still renders. Reveal animations are skipped, navigation and all content work. |
-| WebGL | The hero falls back to a CSS starfield and black hole composition. |
-| GPU / low-end device | The shader drops a star layer and renders at 1× pixel ratio. |
-| `prefers-reduced-motion` | Animations stop, the shader renders a single static frame, and the design still looks finished. |
+| Images | The backdrop is decorative and screen-blended, so a failed load leaves the CSS star field and dust in place. |
+| Slow connection | The backdrop is `fetchpriority="low"`; text and layout paint first, and the smallest AVIF is 32 KB. |
+| `prefers-reduced-motion` | Animations stop, parallax is disabled, and the design still looks finished. |
 | Slow connection | Fonts swap in; text is readable immediately. |
 | A missing image | Nothing breaks — `npm run validate` catches the bad path before you push. |
 

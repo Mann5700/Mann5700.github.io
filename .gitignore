@@ -29,3 +29,6 @@ Thumbs.db
 !.vscode/extensions.json
 !.vscode/settings.json
 .idea/
+
+# full-resolution source plates (derivatives are committed)
+assets-src/

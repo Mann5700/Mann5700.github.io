@@ -1,13 +1,29 @@
 ---
 /**
- * The persistent deep-space environment. Ships a static CSS composition first;
- * the WebGL renderer replaces it when the device can afford one.
+ * The persistent deep-space environment.
+ *
+ * A star field and dust rendered in CSS paint instantly; the Hubble plate of
+ * the Crab Nebula fades in over them. The plate is screen-blended, so its own
+ * black background disappears into the page and the gas reads as an object in
+ * space rather than a wallpaper.
+ *
+ * Plate: NASA, ESA, J. Hester and A. Loll (Arizona State University).
  */
+import { url } from '../lib/site';
+
 interface Props {
-  /** Sub-pages keep the starfield but push the black hole out of frame. */
+  /** Sub-pages get the environment without the subject front and centre. */
   ambient?: boolean;
 }
 const { ambient = false } = Astro.props;
+
+const WIDTHS = [480, 720, 1024, 1440, 1920, 2560];
+const srcset = (ext: string) =>
+  WIDTHS.map((w) => `${url(`/images/nebula/crab-${w}.${ext}`)} ${w}w`).join(', ');
+
+/* Matches the CSS below: the plate is as wide as it is tall, capped by both
+   the viewport width and its height. */
+const sizes = '(max-aspect-ratio: 1/1) 118vw, min(74vw, 108vh)';
 ---
 
 <div
@@ -16,6 +32,21 @@ const { ambient = false } = Astro.props;
   data-cosmos-host
   data-ambient={ambient ? 'true' : undefined}
 >
+  <picture class="cosmos__plate">
+    <source type="image/avif" srcset={srcset('avif')} sizes={sizes} />
+    <source type="image/webp" srcset={srcset('webp')} sizes={sizes} />
+    <img
+      class="cosmos__img"
+      src={url('/images/nebula/crab-1024.webp')}
+      alt=""
+      width="3864"
+      height="3864"
+      decoding="async"
+      fetchpriority="low"
+    />
+  </picture>
+
+  <div class="cosmos__grade"></div>
 </div>
 
 <style>
@@ -26,75 +57,133 @@ const { ambient = false } = Astro.props;
     pointer-events: none;
     overflow: hidden;
     background-color: var(--c-void);
+    /* Star field and cold dust, painted immediately so the first frame is
+       never an empty rectangle. */
     background-image:
-      /* hot core */
-      radial-gradient(
-        circle at var(--neb-x, 70%) var(--neb-y, 46%),
-        rgb(255 228 190 / 34%) 0,
-        rgb(255 150 90 / 18%) 9vmin,
-        transparent 20vmin
-      ),
-      /* warm filaments */
-        radial-gradient(
-          ellipse 34vmin 26vmin at calc(var(--neb-x, 70%) - 6vmin) calc(var(--neb-y, 46%) + 4vmin),
-          rgb(232 92 48 / 44%),
-          transparent 72%
-        ),
-      /* teal oxygen shell */
-        radial-gradient(
-          ellipse 40vmin 30vmin at calc(var(--neb-x, 70%) + 7vmin) calc(var(--neb-y, 46%) - 5vmin),
-          rgb(28 160 195 / 44%),
-          transparent 70%
-        ),
-      /* violet outskirts */
-        radial-gradient(
-          ellipse 52vmin 40vmin at var(--neb-x, 70%) var(--neb-y, 46%),
-          rgb(120 60 165 / 32%),
-          transparent 72%
-        ),
-      /* cold dust */
-        radial-gradient(60% 50% at 18% 80%, rgb(48 70 110 / 14%), transparent 70%),
-      /* starfield tile */
-        url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27420%27 height=%27420%27%3E%3Cg fill=%27%23ffffff%27%3E%3Ccircle cx=%2734%27 cy=%2751%27 r=%271%27 opacity=%27.55%27/%3E%3Ccircle cx=%27118%27 cy=%2719%27 r=%27.7%27 opacity=%27.35%27/%3E%3Ccircle cx=%27201%27 cy=%2788%27 r=%271.2%27 opacity=%27.6%27/%3E%3Ccircle cx=%27288%27 cy=%2734%27 r=%27.6%27 opacity=%27.3%27/%3E%3Ccircle cx=%27376%27 cy=%27102%27 r=%271%27 opacity=%27.45%27/%3E%3Ccircle cx=%2762%27 cy=%27158%27 r=%27.8%27 opacity=%27.4%27/%3E%3Ccircle cx=%27154%27 cy=%27211%27 r=%271.1%27 opacity=%27.5%27/%3E%3Ccircle cx=%27243%27 cy=%27172%27 r=%27.6%27 opacity=%27.3%27/%3E%3Ccircle cx=%27330%27 cy=%27236%27 r=%27.9%27 opacity=%27.42%27/%3E%3Ccircle cx=%2716%27 cy=%27268%27 r=%271%27 opacity=%27.5%27/%3E%3Ccircle cx=%27100%27 cy=%27327%27 r=%27.7%27 opacity=%27.32%27/%3E%3Ccircle cx=%27196%27 cy=%27299%27 r=%271.3%27 opacity=%27.58%27/%3E%3Ccircle cx=%27284%27 cy=%27366%27 r=%27.8%27 opacity=%27.38%27/%3E%3Ccircle cx=%27366%27 cy=%27312%27 r=%27.6%27 opacity=%27.28%27/%3E%3Ccircle cx=%27128%27 cy=%27122%27 r=%27.5%27 opacity=%27.25%27/%3E%3Ccircle cx=%27222%27 cy=%2764%27 r=%27.5%27 opacity=%27.22%27/%3E%3C/g%3E%3C/svg%3E');
-    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat;
-    background-size: auto, auto, auto, auto, auto, 420px 420px;
+      radial-gradient(60% 50% at 16% 82%, rgb(48 70 110 / 16%), transparent 70%),
+      radial-gradient(45% 40% at 88% 14%, rgb(74 52 118 / 14%), transparent 70%),
+      url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27420%27 height=%27420%27%3E%3Cg fill=%27%23ffffff%27%3E%3Ccircle cx=%2734%27 cy=%2751%27 r=%271%27 opacity=%27.55%27/%3E%3Ccircle cx=%27118%27 cy=%2719%27 r=%27.7%27 opacity=%27.35%27/%3E%3Ccircle cx=%27201%27 cy=%2788%27 r=%271.2%27 opacity=%27.6%27/%3E%3Ccircle cx=%27288%27 cy=%2734%27 r=%27.6%27 opacity=%27.3%27/%3E%3Ccircle cx=%27376%27 cy=%27102%27 r=%271%27 opacity=%27.45%27/%3E%3Ccircle cx=%2762%27 cy=%27158%27 r=%27.8%27 opacity=%27.4%27/%3E%3Ccircle cx=%27154%27 cy=%27211%27 r=%271.1%27 opacity=%27.5%27/%3E%3Ccircle cx=%27243%27 cy=%27172%27 r=%27.6%27 opacity=%27.3%27/%3E%3Ccircle cx=%27330%27 cy=%27236%27 r=%27.9%27 opacity=%27.42%27/%3E%3Ccircle cx=%2716%27 cy=%27268%27 r=%271%27 opacity=%27.5%27/%3E%3Ccircle cx=%27100%27 cy=%27327%27 r=%27.7%27 opacity=%27.32%27/%3E%3Ccircle cx=%27196%27 cy=%27299%27 r=%271.3%27 opacity=%27.58%27/%3E%3Ccircle cx=%27284%27 cy=%27366%27 r=%27.8%27 opacity=%27.38%27/%3E%3Ccircle cx=%27366%27 cy=%27312%27 r=%27.6%27 opacity=%27.28%27/%3E%3Ccircle cx=%27128%27 cy=%27122%27 r=%27.5%27 opacity=%27.25%27/%3E%3Ccircle cx=%27222%27 cy=%2764%27 r=%27.5%27 opacity=%27.22%27/%3E%3C/g%3E%3C/svg%3E');
+    background-repeat: no-repeat, no-repeat, repeat;
+    background-size: auto, auto, 420px 420px;
   }
 
-  .cosmos::after {
-    content: '';
+  /* ------------------------------------------------------------------ plate */
+
+  .cosmos__plate {
     position: absolute;
-    inset: 0;
-    background: radial-gradient(120% 90% at 50% 50%, transparent 35%, rgb(5 6 10 / 72%) 100%);
+    top: 50%;
+    right: -12%;
+    display: block;
+    width: min(74vw, 108vh);
+    aspect-ratio: 1;
+    translate: 0 -50%;
+    transform: translate3d(var(--px, 0px), calc(var(--py, 0px) + var(--drift, 0px)), 0);
+    opacity: var(--dim, 1);
+    /* The plate's own background is black, so screen-blending dissolves it
+       into the page and leaves only the gas and its stars. */
+    mix-blend-mode: screen;
+    /* Feathers the square crop into deep space. */
+    -webkit-mask-image: radial-gradient(
+      circle at 50% 50%,
+      #000 38%,
+      rgb(0 0 0 / 55%) 56%,
+      transparent 73%
+    );
+    mask-image: radial-gradient(
+      circle at 50% 50%,
+      #000 38%,
+      rgb(0 0 0 / 55%) 56%,
+      transparent 73%
+    );
+    will-change: transform;
   }
 
-  .cosmos :global(.cosmos__canvas) {
-    position: absolute;
-    inset: 0;
+  .cosmos__img {
     width: 100%;
     height: 100%;
+    object-fit: cover;
+    /* A CSS animation, not a scripted class: the plate must appear even if the
+       enhancement bundle never loads. */
+    animation: plate-in 1.2s var(--e-out) both;
   }
 
-  /* The shader draws its own vignette. */
-  .cosmos[data-cosmos='live']::after {
-    display: none;
-  }
-
-  @media (max-aspect-ratio: 1/1) {
-    .cosmos {
-      --neb-x: 50%;
-      --neb-y: 18%;
+  @keyframes plate-in {
+    from {
+      opacity: 0;
     }
   }
 
-  .cosmos[data-ambient] {
-    --neb-y: -30%;
-    opacity: 0.6;
+  /* --------------------------------------------------------------- grading */
+
+  .cosmos__grade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        90deg,
+        rgb(5 6 10 / 82%) 0%,
+        rgb(5 6 10 / 48%) 36%,
+        rgb(5 6 10 / 0%) 64%
+      ),
+      radial-gradient(130% 95% at 50% 50%, transparent 38%, rgb(5 6 10 / 62%) 100%);
+  }
+
+  /* Screen blending keeps bright gas legible through low opacity alone, so the
+     whole field is also scrimmed as the page scrolls away from the hero. */
+  .cosmos__grade::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--c-void);
+    opacity: calc((1 - var(--dim, 1)) * 0.62);
+  }
+
+  /* ----------------------------------------------------------- breakpoints */
+
+  @media (max-aspect-ratio: 1/1) {
+    .cosmos__plate {
+      top: -6%;
+      right: auto;
+      left: 50%;
+      width: 130vw;
+      translate: -50% 0;
+    }
+
+    /* Keeps the band the hero reserves bright, then ramps hard into darkness
+       so the headline below always has contrast. */
+    .cosmos__grade {
+      background:
+        linear-gradient(
+          180deg,
+          rgb(5 6 10 / 62%) 0%,
+          rgb(5 6 10 / 6%) 17%,
+          rgb(5 6 10 / 28%) 33%,
+          rgb(5 6 10 / 80%) 55%,
+          rgb(5 6 10 / 95%) 100%
+        ),
+        radial-gradient(130% 62% at 50% 16%, transparent 46%, rgb(5 6 10 / 50%) 100%);
+    }
+  }
+
+  .cosmos[data-ambient] .cosmos__plate {
+    opacity: calc(var(--dim, 1) * 0.42);
+    translate: 0 -76%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cosmos__plate {
+      transform: none;
+    }
+
+    .cosmos__img {
+      animation: none;
+    }
   }
 </style>
 
 <script>
-  import { mountCosmos } from '../scripts/cosmos';
+  import { mountBackdrop } from '../scripts/backdrop';
 
   const host = document.querySelector<HTMLElement>('[data-cosmos-host]');
-  if (host) mountCosmos(host);
+  if (host) mountBackdrop(host);
 </script>
