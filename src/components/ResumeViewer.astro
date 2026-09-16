@@ -209,11 +209,17 @@ const updated = profile.resume.updated?.replace('-', '.');
   /* ------------------------------------------------------------------ body */
 
   .viewer__body {
-    display: grid;
-    gap: var(--sp-m);
+    /* Block layout, deliberately: as a grid the row was sized to the panel and
+       squashed the page instead of letting the body scroll. */
+    display: block;
+    /* A flex child defaults to min-height:auto, which refuses to shrink below
+       its content — the panel would clip rather than the body scroll. */
+    min-height: 0;
     padding: var(--sp-m);
     overflow: auto;
     overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 20%) transparent;
     background:
       radial-gradient(90% 60% at 50% 0%, rgb(255 157 92 / 5%), transparent 70%),
       var(--c-void);
@@ -227,6 +233,10 @@ const updated = profile.resume.updated?.replace('-', '.');
     border-radius: var(--r-s);
     overflow: hidden;
     box-shadow: 0 18px 48px -20px rgb(0 0 0 / 80%);
+  }
+
+  .sheet + .sheet {
+    margin-block-start: var(--sp-m);
   }
 
   .sheet img {
