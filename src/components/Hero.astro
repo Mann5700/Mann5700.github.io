@@ -27,7 +27,7 @@ const actions = [
     </p>
 
     <h1 class="hero__name" id="hero-name">
-      <span class="hero__type" style={`--type-steps: steps(${profile.name.length}, end)`}>
+      <span class="hero__type">
         <span class="hero__type-text">{profile.name}</span>
       </span>
     </h1>
@@ -241,34 +241,39 @@ const actions = [
 
   .hero__type-text {
     display: inline-block;
+    /* A clip rather than a mask: masking an element that already uses
+       background-clip: text is not reliable across engines, and the caret's
+       glow sits on the cut anyway, which is what softens it. */
     clip-path: inset(0 var(--reveal, 0%) 0 0);
   }
 
   .hero__type::after {
     content: '';
     position: absolute;
-    top: 0.16em;
+    top: 0.18em;
     left: calc(100% - var(--reveal, 0%));
-    width: 0.05em;
-    height: 0.74em;
-    translate: 0.14em 0;
-    background: var(--c-ember);
-    box-shadow: 0 0 20px var(--c-ember-hot);
+    width: 0.035em;
+    height: 0.7em;
+    translate: 0.16em 0;
+    border-radius: 1px;
+    background: var(--c-ember-hot);
+    box-shadow: 0 0 16px var(--c-ember);
+    opacity: 0.85;
   }
 
   @media (prefers-reduced-motion: no-preference) {
     .hero__type {
-      animation: type-in 1.5s var(--type-steps, steps(10, end)) 0.28s both;
+      animation: type-in 2.1s var(--e-out) 0.3s both;
     }
 
     .hero__type::after {
-      animation: caret 1.05s steps(2, start) infinite;
+      animation: caret 2.4s ease-in-out infinite;
     }
   }
 
   @keyframes type-in {
     from {
-      --reveal: 100%;
+      --reveal: 104%;
     }
     to {
       --reveal: 0%;
@@ -276,8 +281,12 @@ const actions = [
   }
 
   @keyframes caret {
-    to {
-      opacity: 0;
+    0%,
+    100% {
+      opacity: 0.85;
+    }
+    50% {
+      opacity: 0.12;
     }
   }
 
