@@ -19,8 +19,9 @@ const ROOT = path.dirname(fileURLToPath(new URL('../package.json', import.meta.u
 const SOURCE = path.join(ROOT, 'assets-src', 'crab-nebula.jpg');
 const OUT = path.join(ROOT, 'public', 'images', 'nebula');
 
-/** Displayed at up to ~105vh wide, so these cover 1x and 2x on real screens. */
-const WIDTHS = [480, 720, 1024, 1440, 1920, 2560];
+/** Covers 1x through 2x on everything up to a 4K display. 3864 is the source's
+ *  native size, so no display class ever has to upscale the plate. */
+const WIDTHS = [480, 720, 1024, 1440, 1920, 2560, 3200, 3864];
 
 const kb = (bytes) => `${Math.round(bytes / 1024)} KB`;
 
@@ -52,8 +53,10 @@ async function main() {
 
     const avif = path.join(OUT, `crab-${width}.avif`);
     const webp = path.join(OUT, `crab-${width}.webp`);
-    await base.clone().avif({ quality: 52, effort: 6, chromaSubsampling: '4:2:0' }).toFile(avif);
-    await base.clone().webp({ quality: 74, effort: 6 }).toFile(webp);
+    // 4:2:0 is indistinguishable on diffuse gas and roughly halves the file;
+    // sharpness here comes from resolution, not from chroma or quality.
+    await base.clone().avif({ quality: 54, effort: 6, chromaSubsampling: '4:2:0' }).toFile(avif);
+    await base.clone().webp({ quality: 76, effort: 6 }).toFile(webp);
 
     const a = (await stat(avif)).size;
     const w = (await stat(webp)).size;
@@ -61,15 +64,7 @@ async function main() {
     console.log(`  ${String(width).padStart(4)}px   avif ${kb(a).padStart(8)}   webp ${kb(w).padStart(8)}`);
   }
 
-  // A 24px plate inlined as the instant placeholder behind the real image.
-  const blur = await sharp(SOURCE)
-    .resize(24, 24, { fit: 'cover' })
-    .modulate({ saturation: 1.12 })
-    .webp({ quality: 60 })
-    .toBuffer();
-
-  console.log(`\nTotal AVIF: ${kb(total)}`);
-  console.log(`LQIP (paste into Cosmos.astro if it changes):\ndata:image/webp;base64,${blur.toString('base64')}`);
+  console.log(`\nTotal AVIF: ${kb(total)} across ${WIDTHS.length} widths (the browser fetches one).`);
 }
 
 main().catch((error) => {

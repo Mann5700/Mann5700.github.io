@@ -17,7 +17,7 @@ interface Props {
 }
 const { ambient = false } = Astro.props;
 
-const WIDTHS = [480, 720, 1024, 1440, 1920, 2560];
+const WIDTHS = [480, 720, 1024, 1440, 1920, 2560, 3200, 3864];
 const srcset = (ext: string) =>
   WIDTHS.map((w) => `${url(`/images/nebula/crab-${w}.${ext}`)} ${w}w`).join(', ');
 
