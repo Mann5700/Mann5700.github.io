@@ -1,5 +1,13 @@
 @import './tokens.css';
 
+/* Registered so it can be animated: the hero types its name by animating this
+   from 100% (hidden) to 0% (whole). The initial value is the safe end state. */
+@property --reveal {
+  syntax: '<length-percentage>';
+  inherits: true;
+  initial-value: 0%;
+}
+
 /* ============================================================================
    RESET + BASE
    ========================================================================= */

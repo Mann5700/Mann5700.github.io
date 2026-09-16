@@ -27,16 +27,9 @@ const actions = [
     </p>
 
     <h1 class="hero__name" id="hero-name">
-      {
-        profile.name.split(' ').map((word, i, all) => (
-          <span
-            class:list={['hero__word', i === all.length - 1 && 'hero__word--lit']}
-            style={`--i:${i}`}
-          >
-            {word}
-          </span>
-        ))
-      }
+      <span class="hero__type" style={`--type-steps: steps(${profile.name.length}, end)`}>
+        <span class="hero__type-text">{profile.name}</span>
+      </span>
     </h1>
 
     <p class="hero__role">
@@ -147,7 +140,7 @@ const actions = [
   /* Every hero element rises in on load with a shared cadence. This is a pure
      CSS animation so it runs even when the bundle fails to load. */
   .hero__eyebrow,
-  .hero__name .hero__word,
+  .hero__name,
   .hero__role,
   .hero__headline,
   .hero__actions,
@@ -226,9 +219,6 @@ const actions = [
   /* ------------------------------------------------------------------ name */
 
   .hero__name {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 0.28em;
     margin-block-end: var(--sp-m);
     font-size: var(--step-7);
     font-weight: 200;
@@ -240,18 +230,63 @@ const actions = [
     text-shadow: 0 0 90px rgb(159 217 255 / 18%), 0 0 26px rgb(5 6 10 / 55%);
   }
 
-  .hero__word {
-    display: block;
-    animation-delay: calc(0.12s + var(--i) * 0.09s);
+  /* The name types itself in. `--reveal` is a registered property (global.css)
+     so it can be animated; the caret and the clip both read it, which is what
+     keeps them in step. Its initial value is 0% — fully typed — so if the
+     property or the animation is unsupported the name simply renders whole. */
+  .hero__type {
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
   }
 
-  /* The surname is filled with the remnant's own palette instead of a flat
-     colour. The fill drifts like gas and a specular band crosses it slowly.
-     Both layers move in one animation because they share background-position. */
+  .hero__type-text {
+    display: inline-block;
+    clip-path: inset(0 var(--reveal, 0%) 0 0);
+  }
+
+  .hero__type::after {
+    content: '';
+    position: absolute;
+    top: 0.16em;
+    left: calc(100% - var(--reveal, 0%));
+    width: 0.05em;
+    height: 0.74em;
+    translate: 0.14em 0;
+    background: var(--c-ember);
+    box-shadow: 0 0 20px var(--c-ember-hot);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__type {
+      animation: type-in 1.5s var(--type-steps, steps(10, end)) 0.4s both;
+    }
+
+    .hero__type::after {
+      animation: caret 1.05s steps(2, start) infinite;
+    }
+  }
+
+  @keyframes type-in {
+    from {
+      --reveal: 100%;
+    }
+    to {
+      --reveal: 0%;
+    }
+  }
+
+  @keyframes caret {
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* One continuous palette across the whole name, drifting like gas, with a
+     specular band crossing it. Both layers move in one animation because they
+     share background-position. */
   @supports ((background-clip: text) or (-webkit-background-clip: text)) {
-    /* Scoped through .hero__name to outrank the shared `rise` rule, which would
-       otherwise drop the second animation from the shorthand. */
-    .hero__name .hero__word--lit {
+    .hero__type-text {
       background-image:
         linear-gradient(100deg, transparent 41%, rgb(255 255 255 / 72%) 50%, transparent 59%),
         linear-gradient(
@@ -270,10 +305,7 @@ const actions = [
       background-clip: text;
       -webkit-text-fill-color: transparent;
       color: transparent;
-      animation:
-        rise 1.1s var(--e-out) both,
-        nebula-text 16s linear infinite;
-      animation-delay: calc(0.12s + var(--i) * 0.09s), 0s;
+      animation: nebula-text 16s linear infinite;
     }
   }
 
@@ -538,7 +570,9 @@ const actions = [
 
   @media (prefers-reduced-motion: reduce) {
     .hero__eyebrow,
-    .hero__name .hero__word,
+    .hero__name,
+    .hero__type,
+    .hero__type-text,
     .hero__role,
     .hero__headline,
     .hero__actions,

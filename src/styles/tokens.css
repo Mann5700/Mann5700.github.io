@@ -60,7 +60,9 @@
   --step-4: clamp(2.074rem, 1.74rem + 1.48vw, 3rem);
   --step-5: clamp(2.488rem, 1.93rem + 2.48vw, 4rem);
   --step-6: clamp(2.986rem, 2.05rem + 4.16vw, 5.5rem);
-  --step-7: clamp(3.583rem, 2.05rem + 6.81vw, 7.5rem);
+  /* The hero name is typed on one unbroken line, so the floor is set by what
+     fits a 320px screen rather than by taste. */
+  --step-7: clamp(3rem, 1.6rem + 7vw, 7.5rem);
 
   --lh-tight: 1.02;
   --lh-snug: 1.18;
