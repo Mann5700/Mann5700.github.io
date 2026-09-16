@@ -307,7 +307,10 @@ const actions = [
           #9fd9ff 100%
         );
       background-size: 260% 100%, 200% 100%;
-      background-repeat: no-repeat;
+      /* The palette layer tiles: the drift shifts it by exactly one tile, and
+         it starts and ends on the same colour, so the loop is seamless. With
+         no-repeat it would slide off the glyphs and leave the name unpainted. */
+      background-repeat: no-repeat, repeat;
       background-position: -130% 0, 0 0;
       -webkit-background-clip: text;
       background-clip: text;
