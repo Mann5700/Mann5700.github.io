@@ -72,11 +72,28 @@ for (const file of profileFiles) {
   const raw = await readFile(file, 'utf8');
   const href = raw.match(/^\s+href:\s*(\S+)/m)?.[1]?.replace(/^['"]|['"]$/g, '');
   if (href && href.startsWith('/')) {
-    if (!(await exists(path.join(publicDir, href)))) {
+    const served = path.join(publicDir, href);
+    if (!(await exists(served))) {
       problems.push(
         `${rel(file)} points resume.href at "${href}", but public${href} does not exist. ` +
           `Put the PDF at public${href} or update the path.`,
       );
+    } else {
+      // The published resume must never be the unredacted working copy: that
+      // one still carries a phone number. See README § 5.7.
+      const working = (await readdir(root, { withFileTypes: true }))
+        .filter((e) => e.isFile() && e.name.toLowerCase().endsWith('.pdf'))
+        .map((e) => path.join(root, e.name));
+      for (const candidate of working) {
+        const [a, b] = await Promise.all([readFile(candidate), readFile(served)]);
+        if (a.equals(b)) {
+          problems.push(
+            `public${href} is byte-identical to "${path.basename(candidate)}", your private ` +
+              `working copy. That file still contains your phone number. ` +
+              `Run "npm run resume" to publish a redacted copy instead.`,
+          );
+        }
+      }
     }
   }
 }

@@ -198,11 +198,30 @@ disappears again if you remove them all.
 
 ### 5.7 Replace the resume
 
-1. Put the new PDF at `public/resume/` (keeping the same filename is easiest).
-2. If the filename changed, update `resume.href` in
+> **Your phone number must never reach `public/`.** The resume you send to people
+> has it in the header; the copy this site serves must not. A published PDF is
+> downloaded, indexed and scraped — you cannot take it back.
+
+1. Keep your full working copy at the repo root (`Mann Patel Resume.pdf`). It is
+   gitignored, so it is never published.
+2. Run `npm run resume`. It removes the phone number from the PDF's content
+   stream — a real redaction, not a black box drawn over it — re-centres the
+   contact line, keeps the original fonts and the email/GitHub/LinkedIn links,
+   and writes the result to `public/resume/Mann-Patel-Resume.pdf`.
+   The script exits non-zero if a phone number survives, so it cannot fail quietly.
+3. If the filename changed, update `resume.href` in
    `src/content/profile/profile.md`.
-3. Update `resume.updated` so the Signal section shows the right date.
-4. `npm run validate` will fail loudly if the path and the file disagree.
+4. Update `resume.updated` so the Signal section shows the right date.
+5. `npm run validate` fails if `resume.href` and the file on disk disagree.
+
+Requires Python with PyMuPDF (`pip install pymupdf`). It is a one-off tool, not
+part of the build — the redacted PDF is committed, so deploys never need Python.
+
+To check a PDF yourself:
+
+```bash
+python -c "import fitz; print(fitz.open('public/resume/Mann-Patel-Resume.pdf')[0].get_text(sort=True)[:200])"
+```
 
 ### 5.8 Update social links
 
