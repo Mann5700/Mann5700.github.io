@@ -1,6 +1,5 @@
 ---
 import { getEntry } from 'astro:content';
-import { url } from '../lib/site';
 
 const profile = (await getEntry('profile', 'profile'))!.data;
 const year = new Date().getUTCFullYear();

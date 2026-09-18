@@ -70,6 +70,14 @@ const rings = [
 </figure>
 
 <style>
+  /* Registered so it interpolates: a bare var() inside @keyframes animates
+     discretely, which froze the satellites in place. */
+  @property --travel {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0;
+  }
+
   .panel {
     margin: 0;
   }
@@ -128,13 +136,14 @@ const rings = [
     stroke-width: 2.4;
     stroke-linecap: round;
     stroke-dasharray: 4 calc(var(--len) - 4);
+    stroke-dashoffset: calc(var(--len) * var(--travel) * -1);
     animation: travel var(--dur) linear infinite;
     animation-delay: var(--delay);
   }
 
   @keyframes travel {
     to {
-      stroke-dashoffset: calc(var(--len) * -1);
+      --travel: 1;
     }
   }
 
