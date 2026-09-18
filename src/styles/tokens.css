@@ -13,12 +13,13 @@
   --c-raised: #111623;
   --c-elevated: #161c2b;
 
-  /* Starlight. Text sits on a warm-neutral white so it never looks clinical. */
+  /* Starlight. Text sits on a warm-neutral white so it never looks clinical.
+     The muted/faint/dim ramp is floored at WCAG AA (4.5:1) on every surface. */
   --c-text: #e8eaf1;
   --c-text-strong: #ffffff;
   --c-muted: #9aa3b8;
-  --c-faint: #667085;
-  --c-dim: #414a5c;
+  --c-faint: #8e95a5;
+  --c-dim: #7c838f;
 
   /* Structure */
   --c-line: rgb(255 255 255 / 7%);

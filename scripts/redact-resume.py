@@ -31,6 +31,19 @@ DEFAULT_OUT = ROOT / "public" / "resume" / "Mann-Patel-Resume.pdf"
 # North American numbers in the shapes a resume header actually uses.
 PHONE = re.compile(r"(\+?\d{1,2}[\s.\-]?)?\(?\d{3}\)?[\s.\-]\d{3}[\s.\-]\d{4}")
 
+# Word stamps the authoring machine's account name ("Surname Given (EMPLOYEEID)")
+# into the document info dictionary, so the published copy gets its own.
+CLEAN_META = {
+    "author": "Mann Patel",
+    "title": "Mann Patel \u2014 Resume",
+    "subject": "",
+    "keywords": "",
+    "creator": "",
+    "producer": "",
+    "creationDate": "",
+    "modDate": "",
+}
+
 # Reproduces the inter-span rhythm of the original header line.
 SPAN_GAP = 2.1
 
@@ -47,6 +60,29 @@ def find_phone_line(page: fitz.Page):
             if any(PHONE.search(span["text"]) for span in line["spans"]):
                 return line
     return None
+
+
+def scrub_metadata(doc: fitz.Document) -> None:
+    doc.del_xml_metadata()
+    doc.set_metadata(CLEAN_META)
+
+
+def assert_clean(dst: Path) -> None:
+    out = fitz.open(dst)
+
+    remaining = PHONE.search(out[0].get_text())
+    if remaining:
+        sys.exit(f"FAILED: a phone number is still present: {remaining.group(0)}")
+
+    leaked = {
+        key: value
+        for key, value in out.metadata.items()
+        if key in CLEAN_META and (value or "") != CLEAN_META[key]
+    }
+    if leaked:
+        sys.exit(f"FAILED: PDF metadata was not scrubbed: {leaked}")
+
+    print(f"Wrote {dst.relative_to(ROOT)} — no phone number, no authoring metadata.")
 
 
 def keep_spans(spans: list[dict]) -> list[dict]:
@@ -106,7 +142,10 @@ def redact(src: Path, dst: Path) -> None:
     line = find_phone_line(page)
     if line is None:
         print(f"No phone number found in {src.name} — copying as is.")
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        scrub_metadata(doc)
         doc.save(dst, garbage=4, deflate=True)
+        assert_clean(dst)
         render_previews(dst)
         return
 
@@ -162,12 +201,10 @@ def redact(src: Path, dst: Path) -> None:
         cursor += width
 
     dst.parent.mkdir(parents=True, exist_ok=True)
+    scrub_metadata(doc)
     doc.save(dst, garbage=4, deflate=True)
 
-    remaining = PHONE.search(fitz.open(dst)[0].get_text())
-    if remaining:
-        sys.exit(f"FAILED: a phone number is still present: {remaining.group(0)}")
-    print(f"Wrote {dst.relative_to(ROOT)} — no phone number present.")
+    assert_clean(dst)
 
     render_previews(dst)
 

@@ -94,6 +94,15 @@ for (const file of profileFiles) {
           );
         }
       }
+
+      // Word stamps the authoring account name — which embeds the corporate
+      // employee ID — into the PDF metadata. redact-resume.py clears it.
+      if ((await readFile(served)).includes('Microsoft')) {
+        problems.push(
+          `public${href} still carries Word's authoring metadata, which includes the ` +
+            `corporate account name. Run "npm run resume" to republish it.`,
+        );
+      }
     }
   }
 }

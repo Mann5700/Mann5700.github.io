@@ -26,7 +26,7 @@ const updated = profile.resume.updated?.replace('-', '.');
 
 <dialog class="viewer" data-resume-viewer aria-labelledby="viewer-title">
   <div class="viewer__panel">
-    <header class="viewer__bar">
+    <div class="viewer__bar">
       <div class="viewer__id">
         <span class="label">Document</span>
         <h2 class="viewer__title" id="viewer-title">{profile.name} — {profile.resume.label}</h2>
@@ -61,7 +61,7 @@ const updated = profile.resume.updated?.replace('-', '.');
           </svg>
         </button>
       </div>
-    </header>
+    </div>
 
     <div class="viewer__body">
       {
