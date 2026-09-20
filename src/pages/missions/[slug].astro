@@ -40,7 +40,7 @@ const jsonLd = {
   '@type': 'SoftwareSourceCode',
   name: data.title,
   description: data.description,
-  url: absolute(`/missions/${project.id}`, Astro.site),
+  url: absolute(`/missions/${project.id}/`, Astro.site),
   ...(data.links.github ? { codeRepository: data.links.github } : {}),
   programmingLanguage: data.technologies,
   dateCreated: data.year,
@@ -51,7 +51,7 @@ const jsonLd = {
 <Base
   title={`${data.title} — ${data.tagline} | Mann Patel`}
   description={data.description}
-  path={`/missions/${project.id}`}
+  path={`/missions/${project.id}/`}
   jsonLd={jsonLd}
 >
   <Cosmos ambient />
@@ -209,11 +209,11 @@ const jsonLd = {
     </div>
 
     <nav class="shell mission__nav" aria-label="Other missions">
-      <a class="hop hop--prev" href={url(`/missions/${prev.id}`)}>
+      <a class="hop hop--prev" href={url(`/missions/${prev.id}/`)}>
         <span class="mono hop__label">Previous</span>
         <span class="hop__title">{prev.data.title}</span>
       </a>
-      <a class="hop hop--next" href={url(`/missions/${next.id}`)}>
+      <a class="hop hop--next" href={url(`/missions/${next.id}/`)}>
         <span class="mono hop__label">Next</span>
         <span class="hop__title">{next.data.title}</span>
       </a>
