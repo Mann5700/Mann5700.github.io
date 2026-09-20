@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Maintenance cheatsheet — mann5700.github.io</title>
+    <style>
+      :root {
+        --void: #05060a;
+        --deep: #080b12;
+        --surface: #0b0f18;
+        --raised: #111623;
+        --text: #e8eaf1;
+        --muted: #9aa3b8;
+        --faint: #8e95a5;
+        --line: rgb(255 255 255 / 9%);
+        --line-strong: rgb(255 255 255 / 16%);
+        --ember: #ff9d5c;
+        --ember-deep: #d9662a;
+        --ion: #9fd9ff;
+        --danger: #ff8f8f;
+        --mono: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+      }
+
+      * { box-sizing: border-box; margin: 0; }
+
+      body {
+        background: var(--void);
+        color: var(--text);
+        font: 16px/1.65 "Segoe UI", system-ui, -apple-system, sans-serif;
+        padding: 3rem 1.25rem 6rem;
+      }
+
+      main { max-width: 62rem; margin: 0 auto; }
+
+      /* ---------------------------------------------------------- headings */
+
+      h1 {
+        font-size: clamp(1.9rem, 4vw, 2.7rem);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
+
+      h2 {
+        font-size: 1.45rem;
+        letter-spacing: -0.01em;
+        margin: 3.5rem 0 1rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--line);
+      }
+
+      h2 .num {
+        font: 600 0.75rem/1 var(--mono);
+        color: var(--ember);
+        letter-spacing: 0.18em;
+        display: block;
+        margin-bottom: 0.6rem;
+      }
+
+      h3 {
+        font-size: 1.05rem;
+        margin: 2rem 0 0.6rem;
+        color: #fff;
+      }
+
+      h4.inline {
+        font-size: 0.95rem;
+        margin: 1.4rem 0 0.4rem;
+        color: var(--ion);
+      }
+
+      p { margin: 0.75rem 0; color: var(--muted); }
+      p strong, li strong, td strong { color: var(--text); font-weight: 600; }
+
+      .sub { font-size: 1.05rem; margin-top: 1rem; max-width: 47rem; }
+
+      /* ------------------------------------------------------------- bits */
+
+      code {
+        font: 0.875em/1.4 var(--mono);
+        background: rgb(255 157 92 / 12%);
+        color: var(--ember);
+        padding: 0.12em 0.4em;
+        border-radius: 4px;
+        word-break: break-word;
+      }
+
+      pre {
+        background: var(--deep);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--ember-deep);
+        border-radius: 8px;
+        padding: 1rem 1.1rem;
+        overflow-x: auto;
+        margin: 1rem 0;
+      }
+
+      pre code {
+        background: none;
+        color: var(--text);
+        padding: 0;
+        font-size: 0.82rem;
+        line-height: 1.6;
+        white-space: pre;
+      }
+
+      pre .c { color: var(--faint); }
+      pre .k { color: var(--ember); }
+      pre .s { color: var(--ion); }
+
+      ul, ol { margin: 0.75rem 0; padding-left: 1.3rem; color: var(--muted); }
+      li { margin: 0.4rem 0; }
+      li::marker { color: var(--ember-deep); }
+
+      a { color: var(--ion); }
+
+      kbd {
+        font: 600 0.78em/1 var(--mono);
+        background: var(--raised);
+        border: 1px solid var(--line-strong);
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        padding: 0.15em 0.4em;
+        color: var(--text);
+      }
+
+      /* ------------------------------------------------------------ panels */
+
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1.4rem 1.5rem;
+        margin: 1.5rem 0;
+      }
+
+      .panel--answer {
+        border-color: rgb(255 157 92 / 35%);
+        background: linear-gradient(180deg, rgb(255 157 92 / 8%), var(--surface));
+      }
+
+      .panel--warn {
+        border-color: rgb(255 143 143 / 35%);
+        background: rgb(255 143 143 / 6%);
+      }
+
+      .panel--warn .tag { color: var(--danger); }
+
+      .panel--cold {
+        border-color: rgb(159 217 255 / 28%);
+        background: rgb(159 217 255 / 5%);
+      }
+
+      .panel--cold .tag { color: var(--ion); }
+
+      .tag {
+        font: 600 0.7rem/1 var(--mono);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--ember);
+        display: block;
+        margin-bottom: 0.7rem;
+      }
+
+      .panel p:first-of-type { margin-top: 0; }
+      .panel p:last-child, .panel ul:last-child, .panel ol:last-child { margin-bottom: 0; }
+
+      /* ------------------------------------------------------------ tables */
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.2rem 0;
+        font-size: 0.92rem;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 0.7rem 0.8rem;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+
+      th {
+        font: 600 0.72rem/1.3 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--faint);
+        border-bottom-color: var(--line-strong);
+      }
+
+      td { color: var(--muted); }
+      td:first-child { color: var(--text); width: 38%; }
+
+      /* ------------------------------------------------------------- flow */
+
+      .flow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 1.5rem 0;
+        list-style: none;
+        padding: 0;
+      }
+
+      .flow li {
+        flex: 1 1 8rem;
+        background: var(--raised);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0.9rem;
+        margin: 0;
+        font-size: 0.84rem;
+        color: var(--muted);
+      }
+
+      .flow li b {
+        display: block;
+        color: var(--text);
+        font-size: 0.93rem;
+        margin-bottom: 0.2rem;
+      }
+
+      .flow li span {
+        font: 0.68rem/1 var(--mono);
+        color: var(--ember);
+        letter-spacing: 0.12em;
+      }
+
+      /* ------------------------------------------------------- good / bad */
+
+      .compare { display: grid; gap: 1rem; grid-template-columns: 1fr; margin: 1rem 0; }
+      @media (min-width: 48rem) { .compare { grid-template-columns: 1fr 1fr; } }
+
+      .compare > div { border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+      .compare h4 {
+        margin: 0;
+        padding: 0.55rem 0.9rem;
+        font: 600 0.72rem/1.3 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .ok h4 { background: rgb(159 217 255 / 14%); color: var(--ion); }
+      .no h4 { background: rgb(255 143 143 / 12%); color: var(--danger); }
+      .compare pre { margin: 0; border: 0; border-radius: 0; border-left: 0; }
+
+      /* ------------------------------------------------------------ misc */
+
+      .lead-note {
+        font: 0.8rem/1.5 var(--mono);
+        color: var(--faint);
+        letter-spacing: 0.02em;
+      }
+
+      hr { border: 0; border-top: 1px solid var(--line); margin: 3rem 0 0; }
+
+      footer { margin-top: 2rem; color: var(--faint); font-size: 0.85rem; }
+
+      /* ---------------------------------------------------------- toolbar */
+
+      .bar {
+        position: fixed;
+        top: 0.9rem;
+        right: 0.9rem;
+        display: flex;
+        gap: 0.5rem;
+        z-index: 10;
+      }
+
+      .bar button {
+        font: 600 0.78rem/1 "Segoe UI", system-ui, sans-serif;
+        color: var(--text);
+        background: var(--raised);
+        border: 1px solid var(--line-strong);
+        border-radius: 999px;
+        padding: 0.6rem 1rem;
+        cursor: pointer;
+      }
+
+      .bar button:hover { border-color: var(--ember); color: var(--ember); }
+      .bar button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+      .bar button[data-done] { color: var(--ember); border-color: var(--ember); }
+
+      @media (max-width: 46rem) {
+        .bar { position: static; margin: 0 auto 1.5rem; max-width: 62rem; }
+      }
+
+      @media print {
+        body { background: #fff; color: #111; padding: 0; }
+        .bar { display: none; }
+        h2 { page-break-after: avoid; }
+        pre, .panel, table { page-break-inside: avoid; }
+        code { background: #eee; color: #a33d00; }
+        pre { background: #f6f6f6; border-color: #ccc; }
+        pre code, td, p, li { color: #222; }
+        .panel { background: #f9f9f9; border-color: #ccc; }
+        kbd { background: #eee; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="bar">
+      <button type="button" data-save>&#8681; Save this file</button>
+      <button type="button" data-print>&#9113; Save as PDF</button>
+    </div>
+
+    <main>
+      <p class="lead-note">mann5700.github.io · maintenance cheatsheet</p>
+      <h1>Running and changing your site</h1>
+      <p class="sub">
+        Everything a visitor reads lives in Markdown files you can edit straight on
+        GitHub.com. The heavier jobs — a new resume, a new backdrop image — need a laptop.
+        This sheet covers both, plus how to tell a deploy worked and how to undo one.
+      </p>
+
+      <div class="panel panel--answer">
+        <span class="tag">The short answer</span>
+        <p>
+          <strong>Yes — text changes are point-and-click.</strong> Edit a file on github.com,
+          click <strong>Commit changes</strong>, and the site rebuilds and republishes itself.
+          Live at <a href="https://mann5700.github.io">mann5700.github.io</a> in about a minute.
+          Nothing to install, nothing to run.
+        </p>
+        <p>
+          <strong>Needs a laptop:</strong> replacing the resume PDF (section 9), swapping the
+          nebula backdrop (section 10), and upgrading dependencies (section 12). Everything
+          else here is a browser edit.
+        </p>
+      </div>
+
+      <!-- ============================================================= 1 -->
+      <h2><span class="num">01</span>The deploy loop</h2>
+
+      <ol class="flow">
+        <li><span>YOU</span><b>Edit &amp; commit</b>Change text in a <code>.md</code> file on github.com.</li>
+        <li><span>AUTO</span><b>Checks run</b>Content validated, types checked.</li>
+        <li><span>AUTO</span><b>Rebuild</b>Pages regenerated from your text.</li>
+        <li><span>AUTO</span><b>Live</b>Published to mann5700.github.io, ~1 min.</li>
+      </ol>
+
+      <p>
+        The important guarantee: <strong>a broken edit cannot take your site down.</strong>
+        The checks run <em>before</em> anything is published, so a bad file just stops the
+        deploy — the live site keeps serving the previous version. You get a red ✗ in the
+        Actions tab naming the file and the field.
+      </p>
+
+      <!-- ============================================================= 2 -->
+      <h2><span class="num">02</span>The map: where everything lives</h2>
+
+      <table>
+        <thead>
+          <tr><th>I want to change…</th><th>Edit this</th><th>Where</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Name, title, headline, about paragraphs</td><td><code>src/content/profile/profile.md</code></td><td>Browser</td></tr>
+          <tr><td>Email, location, "Open to…" pill, the 4 metrics</td><td><code>src/content/profile/profile.md</code></td><td>Browser</td></tr>
+          <tr><td>GitHub / LinkedIn links</td><td><code>profile.md</code> → <code>socials:</code></td><td>Browser</td></tr>
+          <tr><td>A mission (project) — any of its text</td><td><code>src/content/projects/&lt;name&gt;.md</code></td><td>Browser</td></tr>
+          <tr><td>A job — company, title, dates, bullets</td><td><code>src/content/experience/&lt;name&gt;.md</code></td><td>Browser</td></tr>
+          <tr><td>Degrees / schools</td><td><code>src/content/education/&lt;name&gt;.md</code></td><td>Browser</td></tr>
+          <tr><td>Skill groups and the tools in them</td><td><code>src/content/skills/&lt;name&gt;.md</code></td><td>Browser</td></tr>
+          <tr><td>Certifications, awards, talks, papers</td><td><code>src/content/credentials/</code></td><td>Browser</td></tr>
+          <tr><td>Section names and intro lines</td><td><code>src/components/*.astro</code> — section 8</td><td>Browser, carefully</td></tr>
+          <tr><td>"Page not found" wording</td><td><code>src/pages/404.astro</code></td><td>Browser, carefully</td></tr>
+          <tr><td>Colours, spacing, the whole look</td><td><code>src/styles/tokens.css</code></td><td>Browser, carefully</td></tr>
+          <tr><td>Resume PDF</td><td><code>npm run resume</code> — section 9</td><td>Laptop</td></tr>
+          <tr><td>Nebula backdrop / social preview card</td><td><code>npm run backdrop</code>, <code>npm run og</code> — section 10</td><td>Laptop</td></tr>
+        </tbody>
+      </table>
+
+      <p class="lead-note">
+        Repo: github.com/Mann5700/Mann5700.github.io · local clone:
+        <code>Documents\Mann Portfolio Website</code>
+      </p>
+
+      <!-- ============================================================= 3 -->
+      <h2><span class="num">03</span>The click-by-click routine</h2>
+
+      <ol>
+        <li>Go to <a href="https://github.com/Mann5700/Mann5700.github.io">github.com/Mann5700/Mann5700.github.io</a>.</li>
+        <li>Click into the folders — e.g. <code>src</code> → <code>content</code> → <code>projects</code> → <code>reqbridge.md</code>.</li>
+        <li>Click the <strong>pencil icon</strong> at the top right of the file.</li>
+        <li>Change <strong>only the words</strong>. Leave field names, colons, dashes and indentation exactly as they are.</li>
+        <li><strong>Commit changes…</strong> → short message → keep <strong>Commit directly to the <code>main</code> branch</strong> → confirm.</li>
+        <li><strong>Actions</strong> tab → wait for the green ✓ (about a minute).</li>
+        <li>Open the site and hard-refresh: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>.</li>
+      </ol>
+
+      <div class="panel panel--cold">
+        <span class="tag">Doing it from the laptop instead</span>
+        <p>In <code>Documents\Mann Portfolio Website</code>:</p>
+<pre><code>npm run dev        <span class="c"># live preview at localhost:4321 while you type</span>
+npm run verify     <span class="c"># validate + type-check + build, before you push</span>
+git add -A
+git commit -m <span class="s">"Update mission copy"</span>
+git push</code></pre>
+        <p class="lead-note">
+          If push complains about certificates on a corporate network, use
+          <code>git -c http.sslBackend=schannel push</code>.
+        </p>
+      </div>
+
+      <!-- ============================================================= 4 -->
+      <h2><span class="num">04</span>How a content file is built</h2>
+
+      <p>
+        Two parts. Between the two <code>---</code> lines are <strong>structured fields</strong>
+        the site reads. Below the second <code>---</code> is <strong>free prose</strong> — write
+        whatever you want there, in normal Markdown.
+      </p>
+
+<pre><code><span class="c">--- &lt;- fields start</span>
+<span class="k">title:</span> ReqBridge
+<span class="k">tagline:</span> Requirements Intelligence Engine
+<span class="k">order:</span> 1
+<span class="k">technologies:</span>
+  - Python
+  - LangGraph
+<span class="c">--- &lt;- fields end</span>
+
+Normal sentences down here. **Bold** and *italic* work.
+Leave a blank line between paragraphs.</code></pre>
+
+      <h3>Five rules that prevent every common breakage</h3>
+      <ol>
+        <li><strong>Never rename the word before a colon.</strong> <code>title:</code>, <code>order:</code>, <code>summary:</code> are wiring, not labels.</li>
+        <li><strong>Spaces, never Tab.</strong> Copy the line above and edit it rather than typing indentation from scratch.</li>
+        <li><strong>List items are dash + space + text.</strong> <code>- Python</code>, never <code>-Python</code>.</li>
+        <li><strong>Text containing a colon-space</strong> must be wrapped in double quotes, or moved into a <code>&gt;-</code> block.</li>
+        <li><strong>Inside a <code>&gt;-</code> block, keep every line indented</strong> by the same two spaces.</li>
+      </ol>
+
+      <div class="compare">
+        <div class="ok">
+          <h4>✓ Safe</h4>
+<pre><code><span class="k">tagline:</span> Fewer meetings, more shipping
+<span class="k">description:</span> <span class="s">&gt;-</span>
+  A long paragraph that can
+  wrap over several lines as
+  long as each stays indented
+  by two spaces.
+<span class="k">role:</span> <span class="s">"Engineer: Platform"</span></code></pre>
+        </div>
+        <div class="no">
+          <h4>✗ Breaks the build</h4>
+<pre><code><span class="k">Tagline:</span> Fewer meetings
+<span class="k">role:</span> Engineer: Platform
+<span class="k">technologies:</span>
+-Python
+<span class="k">description:</span> <span class="s">&gt;-</span>
+Not indented, so YAML
+loses the block.</code></pre>
+        </div>
+      </div>
+
+      <!-- ============================================================= 5 -->
+      <h2><span class="num">05</span>Recipes — the usual edits</h2>
+
+      <h4 class="inline">Headline, bio, availability, the four metrics</h4>
+      <p>All in <code>src/content/profile/profile.md</code>:</p>
+<pre><code><span class="k">role:</span> Software Engineer              <span class="c"># sits under your name</span>
+<span class="k">headline:</span> I build AI-augmented…      <span class="c"># the big statement</span>
+<span class="k">location:</span> Jersey City, NJ
+<span class="k">availability:</span> Open to interesting problems   <span class="c"># delete line to hide</span>
+<span class="k">metrics:</span>                             <span class="c"># exactly 4 max</span>
+  - <span class="k">value:</span> 4+ hrs
+    <span class="k">label:</span> PI Planning saved per dev team, per sprint</code></pre>
+      <p>The paragraphs below the closing <code>---</code> are your "about" text — rewrite freely.</p>
+
+      <h4 class="inline">Edit an existing mission</h4>
+      <p>
+        <code>src/content/projects/&lt;name&gt;.md</code>. Fields you'll actually touch:
+        <code>title</code>, <code>tagline</code>, <code>description</code> (the card summary),
+        <code>problem</code>, <code>approach</code>, <code>architecture</code> (bullets),
+        <code>decisions</code> (title + detail pairs), <code>outcomes</code> (value + label pairs).
+        Delete any optional field you don't want and it simply stops rendering.
+      </p>
+      <p>Values that must be exact:</p>
+      <ul>
+        <li><code>order</code> — lower number appears first.</li>
+        <li><code>featured: true</code> — promotes it to a full-width case study.</li>
+        <li><code>status</code> — one of <code>active</code>, <code>shipped</code>, <code>archived</code>.</li>
+        <li><code>theme</code> — one of <code>ember</code>, <code>ion</code>, <code>dust</code>, <code>void</code>.</li>
+        <li><code>year</code> — <code>2026</code> or <code>2026-04</code>.</li>
+      </ul>
+
+      <h4 class="inline">Add a new mission</h4>
+      <ol>
+        <li>Open <code>src/content/projects/_template.md</code>, copy all of it.</li>
+        <li>In the <code>projects</code> folder: <strong>Add file → Create new file</strong>.</li>
+        <li>Name it <code>my-new-project.md</code> — lowercase, hyphens, no spaces. <strong>The filename becomes the URL:</strong> <code>/missions/my-new-project/</code>.</li>
+        <li>Paste, fill in, delete the commented-out lines you don't need, commit.</li>
+      </ol>
+      <p>The card and the full detail page both build themselves. No other file to update.</p>
+
+      <h4 class="inline">Remove a mission</h4>
+      <p>Open the file → <strong>⋯</strong> → <strong>Delete file</strong> → commit. Keep at least one; an empty folder fails the build.</p>
+
+      <h4 class="inline">Add or edit a job</h4>
+      <p>
+        <code>src/content/experience/&lt;name&gt;.md</code>. Dates are <code>YYYY-MM</code>.
+        For your current job use <code>current: true</code> and omit <code>end</code> — it shows
+        "Present". <code>order: 1</code> is the newest role.
+      </p>
+
+      <h4 class="inline">Skills</h4>
+<pre><code><span class="k">label:</span> Languages
+<span class="k">order:</span> 1
+<span class="k">items:</span>
+  - Java
+  - <span class="k">name:</span> Python
+    <span class="k">note:</span> Primary language day to day
+    <span class="k">core:</span> true          <span class="c"># renders brighter</span></code></pre>
+      <p>One file per group in <code>src/content/skills/</code>. Delete a file to drop the whole group.</p>
+
+      <h4 class="inline">Certifications, awards, talks, papers</h4>
+      <p>
+        One file per item in <code>src/content/credentials/</code>. <code>kind</code> must be
+        <code>certification</code>, <code>award</code>, <code>publication</code> or
+        <code>talk</code>. The whole section appears only when at least one non-draft entry
+        exists, and disappears again if you remove them all.
+      </p>
+
+      <h4 class="inline">Social links</h4>
+      <p>
+        The <code>socials:</code> list in <code>profile.md</code> drives the nav, the Signal
+        section, the footer and the search-engine data at once. One place, four effects.
+      </p>
+
+      <!-- ============================================================= 6 -->
+      <h2><span class="num">06</span>What not to touch</h2>
+
+      <div class="panel panel--warn">
+        <span class="tag">Leave these alone</span>
+        <ul>
+          <li><code>src/layouts/</code>, <code>src/lib/</code>, <code>src/scripts/</code> — plumbing and animation logic.</li>
+          <li><code>src/content.config.ts</code> — the rulebook your content is checked against.</li>
+          <li><code>astro.config.mjs</code>, <code>package.json</code>, <code>package-lock.json</code>, <code>tsconfig.json</code>.</li>
+          <li><code>.github/workflows/deploy.yml</code> — the thing that publishes the site.</li>
+          <li>Anything inside <code>&lt; &gt;</code> angle brackets, and any <code>class="…"</code> value.</li>
+        </ul>
+      </div>
+
+      <!-- ============================================================= 7 -->
+      <h2><span class="num">07</span>Section names and intro lines</h2>
+
+      <p>
+        The five sections — <strong>Origin, Trajectory, Missions, Constellation, Signal</strong> —
+        and their intro lines are not Markdown; they live in component files. Safe to edit if you
+        are surgical: <strong>change only the words between the quote marks, and keep both quotes.</strong>
+      </p>
+
+<pre><code><span class="c">// src/components/Missions.astro</span>
+  <span class="k">title=</span><span class="s">"Missions"</span>
+  <span class="k">lede=</span><span class="s">"Systems I designed and built end to end."</span></code></pre>
+
+      <table>
+        <thead><tr><th>Text</th><th>File</th></tr></thead>
+        <tbody>
+          <tr><td>Work intro line</td><td><code>src/components/Missions.astro</code></td></tr>
+          <tr><td>Career intro line</td><td><code>src/components/Trajectory.astro</code></td></tr>
+          <tr><td>Skills intro line</td><td><code>src/components/Constellation.astro</code></td></tr>
+          <tr><td>Contact paragraph</td><td><code>src/components/Signal.astro</code></td></tr>
+          <tr><td>Nav section names</td><td><code>src/lib/site.ts</code> → <code>SECTIONS</code></td></tr>
+          <tr><td>404 wording</td><td><code>src/pages/404.astro</code></td></tr>
+          <tr><td>Footer credit line</td><td><code>src/components/Footer.astro</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="panel panel--warn">
+        <span class="tag">If you rename a section</span>
+        <p>
+          The name appears in <strong>two</strong> places: the component's <code>title=</code>
+          and the <code>SECTIONS</code> list in <code>src/lib/site.ts</code>. Change both or the
+          nav and the heading disagree. Do <strong>not</strong> change the <code>id</code> values
+          in <code>SECTIONS</code> — those are the anchor links.
+        </p>
+      </div>
+
+      <!-- ============================================================= 8 -->
+      <h2><span class="num">08</span>Changing the look without touching components</h2>
+
+      <p>
+        <code>src/styles/tokens.css</code> holds every colour, type size, spacing step, radius and
+        easing curve on the site. Changing one line re-tints everything consistently:
+      </p>
+
+<pre><code><span class="k">--c-ember:</span> #ff9d5c;   <span class="c">/* the warm accent — buttons, numbers, highlights */</span>
+<span class="k">--c-ion:</span>   #9fd9ff;   <span class="c">/* the cool accent — links, secondary detail    */</span>
+<span class="k">--c-void:</span>  #05060a;   <span class="c">/* page background                              */</span></code></pre>
+
+      <div class="panel panel--warn">
+        <span class="tag">One caution</span>
+        <p>
+          The palette was tuned to pass <strong>WCAG AA contrast</strong>. If you lighten the
+          background or darken the text, check that body copy still reads clearly — a pretty
+          colour that fails contrast is a real accessibility regression, and it is the one
+          "cosmetic" change that can actually make the site worse.
+        </p>
+      </div>
+
+      <!-- ============================================================= 9 -->
+      <h2><span class="num">09</span>Replacing the resume</h2>
+
+      <div class="panel panel--warn">
+        <span class="tag">Read this first</span>
+        <p>
+          <strong>Never drop your personal resume PDF into <code>public/</code>.</strong> The copy
+          you email people carries your phone number. Anything under <code>public/</code> is
+          downloaded, indexed and scraped — you cannot take it back.
+        </p>
+      </div>
+
+      <p>On the laptop, in <code>Documents\Mann Portfolio Website</code>:</p>
+      <ol>
+        <li>Save the new full resume at the project root as <code>Mann Patel Resume.pdf</code>. The root <code>*.pdf</code> pattern is gitignored, so it never gets committed.</li>
+        <li>Run <code>npm run resume</code>. It removes the phone number from the PDF's content stream (a real redaction, not a black box over it), strips authoring metadata, keeps the fonts and the email/GitHub/LinkedIn links, writes <code>public/resume/Mann-Patel-Resume.pdf</code>, and rasterises the preview images the on-page viewer shows. <strong>It exits with an error if a phone number survives</strong>, so it cannot fail quietly.</li>
+        <li>Update <code>resume.updated</code> in <code>src/content/profile/profile.md</code> to the new month, e.g. <code>2026-11</code>.</li>
+        <li>If the filename changed, update <code>resume.href</code> too — <code>npm run validate</code> fails if it and the file on disk disagree.</li>
+        <li><code>npm run verify</code>, then commit and push.</li>
+      </ol>
+      <p class="lead-note">One-off prerequisite: <code>pip install pymupdf</code>. Deploys never need Python — the redacted PDF is committed.</p>
+
+      <p>To check any PDF yourself:</p>
+<pre><code>python -c "import fitz; print(fitz.open('public/resume/Mann-Patel-Resume.pdf')[0].get_text()[:300])"</code></pre>
+
+      <p>
+        Changing only the <em>date</em> shown beside the resume, with no new PDF, is a plain
+        browser edit of <code>resume.updated</code>.
+      </p>
+
+      <!-- ============================================================ 10 -->
+      <h2><span class="num">10</span>Backdrop image and social preview card</h2>
+
+      <h4 class="inline">Swap the nebula</h4>
+      <ol>
+        <li>Put the full-resolution image at <code>assets-src/crab-nebula.jpg</code>. That folder is gitignored, so the heavy original never enters the repo.</li>
+        <li>Adjust <code>CROP</code> at the top of <code>scripts/build-backdrop.mjs</code> — the image is shown as a feathered shape, so the crop needs to frame the subject, not the centre of the plate.</li>
+        <li><code>npm run backdrop</code> — writes AVIF and WebP at eight widths (480 → 3864) into <code>public/images/nebula/</code>, which <strong>is</strong> committed.</li>
+        <li><code>npm run og</code> — rebuilds the social preview card from the same image.</li>
+        <li>Update the credit line in <code>src/components/Footer.astro</code>.</li>
+        <li><code>npm run verify</code>, commit, push.</li>
+      </ol>
+
+      <h4 class="inline">Just the link preview card</h4>
+      <p>
+        <code>npm run og</code> regenerates <code>public/og/og.png</code> (1200×630) — this is what
+        shows up when the site is pasted into LinkedIn, Slack or iMessage. Re-run it after you
+        change your name or title so the card doesn't contradict the page.
+      </p>
+
+      <div class="panel panel--cold">
+        <span class="tag">Preview caches</span>
+        <p>
+          LinkedIn and Slack cache preview cards hard. After changing the OG image, expect the
+          old card to persist for a while — that's their cache, not your site. LinkedIn's
+          Post Inspector can force a refresh.
+        </p>
+      </div>
+
+      <h4 class="inline">Favicon and app icons</h4>
+      <p>
+        <code>public/favicon.svg</code> and <code>public/icons/</code>
+        (<code>icon-192.png</code>, <code>icon-512.png</code>, <code>apple-touch-icon.png</code>).
+        Replace the files with same-sized versions using the same names and nothing else changes.
+      </p>
+
+      <!-- ============================================================ 11 -->
+      <h2><span class="num">11</span>Did it publish? And how to undo it</h2>
+
+      <h4 class="inline">Check the deploy</h4>
+      <ol>
+        <li><strong>Actions</strong> tab → newest run on top.</li>
+        <li>Green ✓ = live. Yellow dot = building, wait. Red ✗ = <em>not</em> published, site unchanged.</li>
+        <li>On red, click the run → the failed step → the last red lines name the file and the field. Fix and commit again.</li>
+      </ol>
+
+      <table>
+        <thead><tr><th>Message you'll see</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr><td><code>Missing required field "order"</code></td><td>You deleted a line the schema needs. Put it back.</td></tr>
+          <tr><td><code>Field "…" must be text</code></td><td>Usually an unquoted value containing a colon.</td></tr>
+          <tr><td><code>Invalid enum value</code></td><td><code>status</code> or <code>theme</code> is a word that isn't on the allowed list.</td></tr>
+          <tr><td><code>points resume.href at … does not exist</code></td><td>The PDF path and the actual file disagree.</td></tr>
+          <tr><td>Anything mentioning <code>YAML</code></td><td>Indentation or a stray dash. Compare against a file you didn't touch.</td></tr>
+        </tbody>
+      </table>
+
+      <h4 class="inline">Still seeing the old version?</h4>
+      <p>
+        Browser cache, not the site. Hard-refresh: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>
+        (<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> on Mac), or open a private window.
+      </p>
+
+      <h4 class="inline">Undo</h4>
+      <ol>
+        <li><strong>Commits</strong> → click the commit you regret → <strong>Revert</strong>.</li>
+        <li>Confirm. The previous version redeploys on its own in about a minute.</li>
+      </ol>
+      <p>Nothing is ever lost — every version of every sentence is in the history.</p>
+
+      <!-- ============================================================ 12 -->
+      <h2><span class="num">12</span>Longer-term upkeep</h2>
+
+      <table>
+        <thead><tr><th>Task</th><th>How</th><th>When</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Update dependencies</td>
+            <td><code>npm outdated</code>, then <code>npm update</code> (or <code>npm install astro@latest</code>), then <code>npm run verify</code> before pushing.</td>
+            <td>Every few months, or when GitHub raises a security alert</td>
+          </tr>
+          <tr>
+            <td>Runner image</td>
+            <td><code>runs-on:</code> in <code>.github/workflows/deploy.yml</code>. Pinning to an explicit image, e.g. <code>ubuntu-26.04</code>, avoids surprise migrations.</td>
+            <td>Only if a build warning mentions it</td>
+          </tr>
+          <tr>
+            <td>Node version</td>
+            <td><code>node-version: 24</code> in the same file, plus <code>engines</code> in <code>package.json</code>.</td>
+            <td>When Node 24 leaves support</td>
+          </tr>
+          <tr>
+            <td>Custom domain</td>
+            <td>Settings → Pages → Custom domain, then add the DNS records GitHub shows. <strong>No code change needed</strong> — the build reads the domain from the Pages config.</td>
+            <td>Whenever you buy one</td>
+          </tr>
+          <tr>
+            <td>Check outbound links still work</td>
+            <td>Click the GitHub/LinkedIn links and each mission's repo link.</td>
+            <td>After renaming any repo</td>
+          </tr>
+          <tr>
+            <td>Keep the resume current</td>
+            <td>Section 9, and bump <code>resume.updated</code>.</td>
+            <td>Every time the real resume changes</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="panel panel--cold">
+        <span class="tag">Renaming a project repo</span>
+        <p>
+          If you rename a repo on GitHub, the <code>links.github</code> URL inside the matching
+          <code>src/content/projects/*.md</code> still works (GitHub redirects), but it's worth
+          updating so the link is honest. Nothing breaks either way.
+        </p>
+      </div>
+
+      <!-- ============================================================ 13 -->
+      <h2><span class="num">13</span>If something looks properly broken</h2>
+
+      <table>
+        <thead><tr><th>Symptom</th><th>Cause &amp; fix</th></tr></thead>
+        <tbody>
+          <tr><td>Site is the old version despite a green ✓</td><td>Browser cache. Hard-refresh, or private window.</td></tr>
+          <tr><td>A section vanished</td><td>Its folder is empty, or every entry is a draft. Add an entry back.</td></tr>
+          <tr><td>A project page 404s</td><td>The filename changed, so the URL changed. Filenames are the URLs.</td></tr>
+          <tr><td>Everything looks unstyled</td><td>Almost always a half-saved edit in a component file. Revert that commit.</td></tr>
+          <tr><td><code>npm install</code> fails on certificates</td><td>Corporate network. The repo ships a local <code>.npmrc</code> workaround — see the README's Troubleshooting section.</td></tr>
+          <tr><td>Local dev shows stale styles</td><td>Stop the server, delete <code>node_modules\.vite</code>, start again.</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        Worst case, you can always get back to a known-good site: find the last commit with a
+        green ✓ in the Actions tab and revert everything after it. The site is static files —
+        there is no database to corrupt and no server to fall over.
+      </p>
+
+      <!-- ============================================================ 14 -->
+      <h2><span class="num">14</span>One-minute summary</h2>
+
+      <div class="panel panel--answer">
+        <ul>
+          <li>Words live in <code>src/content/</code>. Edit on github.com, commit to <code>main</code>, done.</li>
+          <li>Publishing is automatic, about a minute, nothing to run.</li>
+          <li>Change words — never field names, indentation or punctuation structure.</li>
+          <li>A bad edit can't break the live site; it just refuses to publish.</li>
+          <li>New mission = new <code>.md</code> copied from <code>_template.md</code>. Filename = URL.</li>
+          <li>Resume, backdrop and OG card are the only laptop jobs: <code>npm run resume</code> / <code>backdrop</code> / <code>og</code>.</li>
+          <li>Always <code>npm run verify</code> before pushing from the laptop.</li>
+          <li>Hard-refresh before believing it didn't update.</li>
+        </ul>
+      </div>
+
+      <hr />
+      <footer>
+        Repo: github.com/Mann5700/Mann5700.github.io · Live: mann5700.github.io ·
+        Full reference: <code>README.md</code> in the repo.
+        <br />
+        Keep a copy: <strong>Save this file</strong> downloads this page as a single
+        self-contained <code>.html</code> you can open offline on any device;
+        <strong>Save as PDF</strong> prints it.
+      </footer>
+    </main>
+
+    <script>
+      (function () {
+        var saveBtn = document.querySelector('[data-save]');
+        var printBtn = document.querySelector('[data-print]');
+
+        printBtn.addEventListener('click', function () {
+          window.print();
+        });
+
+        saveBtn.addEventListener('click', function () {
+          var html = '<!doctype html>\n' + document.documentElement.outerHTML;
+          var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'mann-maintenance-cheatsheet.html';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function () {
+            URL.revokeObjectURL(a.href);
+          }, 1000);
+
+          var original = saveBtn.textContent;
+          saveBtn.textContent = '\u2713 Saved to Downloads';
+          saveBtn.setAttribute('data-done', '');
+          setTimeout(function () {
+            saveBtn.textContent = original;
+            saveBtn.removeAttribute('data-done');
+          }, 2500);
+        });
+      })();
+    </script>
+  </body>
+</html>
